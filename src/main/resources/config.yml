@@ -1,0 +1,40 @@
+# Sound to emit once when a new item is added to the chest or barrel
+sound:
+  # Sound is enabled or not
+  enabled: true
+
+  # Sound to play
+  # Use https://papermc.io/javadocs/paper/1.15/org/bukkit/Effect.html
+  sound: EXTINGUISH
+
+  # Data of Sound
+  # Usually this isn't ever used, some sounds require a specific data number
+  # Leave it to 0 if no data
+  data: 0
+
+  # Radius of sound
+  radius: 15
+
+# Particles to emit when a new item is added to the chest or barrel
+particles:
+  # Enabled or not?
+  enabled: true
+
+  # Particle to use
+  # Use this list https://papermc.io/javadocs/paper/1.15/org/bukkit/Particle.html
+  particle: VILLAGER_HAPPY
+
+  # The length of time, in seconds, the particles should emit on the chest or barrel
+  # when a new item is added
+  length-seconds: 3
+
+  # There are 20 ticks in a second, how often should particles be emitted. This can be no higher
+  # than 20 and no lower than 1. Numbers higher than 20 or lower than 1 will be capped to the max or min.
+  new-every-nth-tick: 2
+
+  # The number of particles that should be emitted each time
+  count-every-nth-tick: 15
+
+  # Radius of particles to emit
+  # Note that 0.5 is pretty good, any more might be a bit too far
+  radius: 0.5
