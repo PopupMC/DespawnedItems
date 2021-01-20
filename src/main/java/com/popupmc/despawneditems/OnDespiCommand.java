@@ -1,7 +1,6 @@
 package com.popupmc.despawneditems;
 
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,6 +8,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 
 // Handles the /despi command
 public class OnDespiCommand implements CommandExecutor {
@@ -73,6 +74,10 @@ public class OnDespiCommand implements CommandExecutor {
                 // to undo use /despi load
             case "solo-add":
                 return onCommandSoloAdd(sender);
+                // Remove all of a certain material from all chests
+                // Very handy for trash items or overly stocked items
+            case "remove-all-material":
+                return onCommandRemoveAllMaterial(sender, args);
         }
 
         // If we've gotten this far it means the player issued a wrong command
@@ -220,6 +225,52 @@ public class OnDespiCommand implements CommandExecutor {
 
         // Announce success
         sender.sendMessage(ChatColor.GOLD + "Solo Location Setup");
+        return true;
+    }
+
+    // Removes all of a certain material from all chests
+    private boolean onCommandRemoveAllMaterial(@NotNull CommandSender sender, String[] args) {
+
+        // Ensure args is correct
+        if(args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Error: requires name of material to remove");
+            return false;
+        }
+
+        // Get name(s)
+        String[] names = args[1].split(",");
+        ArrayList<Material> materials = new ArrayList<>();
+
+        // Convert from string to Material
+        for(String name : names) {
+            // Attempt to get material, error out if invalid material
+            try {
+                Material matRes = Material.valueOf(name);
+                materials.add(matRes);
+            }
+            catch (IllegalArgumentException ex) {
+                sender.sendMessage(ChatColor.GOLD + "Warning: invalid material name " + name + " skipping...");
+            }
+        }
+
+        // If no materials names were useable then quit
+        if(materials.size() <= 0) {
+            sender.sendMessage(ChatColor.RED + "Error: No material names usable.");
+            return false;
+        }
+
+        // Make sure something isn't already in progress
+        if(DespawnedItems.removeMaterialsInst != null) {
+            sender.sendMessage(ChatColor.RED + "Error: Removal already in-progress");
+            return false;
+        }
+
+        // Initiate material removal
+        DespawnedItems.removeMaterialsInst = new RemoveMaterials();
+        DespawnedItems.removeMaterialsInst.removeMaterials(sender, materials);
+
+        sender.sendMessage(ChatColor.GREEN + "Begun removal of materials... This may take a while...");
+
         return true;
     }
 

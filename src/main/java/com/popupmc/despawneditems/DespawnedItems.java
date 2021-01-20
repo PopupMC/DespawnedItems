@@ -48,4 +48,9 @@ public class DespawnedItems extends JavaPlugin implements Listener {
 
     // Holds effects being played currently
     static ArrayList<PlayEffect> effectsPlaying = new ArrayList<>();
+
+    // Holds remove materials command being executed
+    // This takes a long time to execute and so it must be spanned out over several
+    // server ticks
+    static RemoveMaterials removeMaterialsInst = null;
 }
