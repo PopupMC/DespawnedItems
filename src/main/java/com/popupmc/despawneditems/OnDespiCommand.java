@@ -70,6 +70,9 @@ public class OnDespiCommand implements CommandExecutor {
                 // Number of ongoing active effects
             case "active-effects-count":
                 return onCommandActiveEffectsCount(sender);
+                // Number of ongoing despawns being processed
+            case "active-despawns-count":
+                return onCommandActiveDespawnsCount(sender);
                 // Removes all locations, resets rnd-index, and adds a single location for debugging
                 // to undo use /despi load
             case "solo-add":
@@ -212,6 +215,12 @@ public class OnDespiCommand implements CommandExecutor {
         return true;
     }
 
+    private boolean onCommandActiveDespawnsCount(@NotNull CommandSender sender) {
+        // Return number of ongoing active effects
+        sender.sendMessage(ChatColor.GOLD + "Active Despawns Counts: " + ChatColor.YELLOW + DespawnedItems.processItemDespawns.size());
+        return true;
+    }
+
     private boolean onCommandSoloAdd(@NotNull CommandSender sender) {
         // Get valid useable block being looked at, will be null if not both valid and useable
         // A message is already sent to the user
@@ -219,6 +228,9 @@ public class OnDespiCommand implements CommandExecutor {
 
         if(loc == null)
             return false;
+
+        // Clear locations
+        DespawnedItemsConfig.locs.clear();
 
         // Add location to list directly
         DespawnedItemsConfig.locs.add(new LocationEntry(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), loc.getWorld().getName()));

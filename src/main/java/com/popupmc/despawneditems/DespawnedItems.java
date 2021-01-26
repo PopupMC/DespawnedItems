@@ -53,4 +53,7 @@ public class DespawnedItems extends JavaPlugin implements Listener {
     // This takes a long time to execute and so it must be spanned out over several
     // server ticks
     static RemoveMaterials removeMaterialsInst = null;
+
+    // Holds instances to item despawns currently being processed
+    public static ArrayList<ProcessItemDespawn> processItemDespawns = new ArrayList<>();
 }

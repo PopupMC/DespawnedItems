@@ -114,7 +114,7 @@ class DespawnedItemsConfig {
         locationsConfig.set("locations", locsStrList);
 
         // Delete file, if it doesnt exist wont throw error
-        boolean res = locationsConfigFile.delete();
+        locationsConfigFile.delete();
 
         // Save YML file
         try {
