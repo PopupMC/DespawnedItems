@@ -8,11 +8,12 @@ api-version: 1.15
 commands:
   despi:
     description: Accesses despawned items command
-    usage: /despi add|rem|exists|reload|force-save|locs-count|rnd-ind-count|rnd-ind-reset|active-effects-count|solo-add
+    usage: /despi
     permission: despi.use
     permission-message: You do not have permission to use despawned items
 
 permissions:
   despi.use:
-    description: Allows you to use /despi command
-    default: op
+    description: Allows you to use despi
+  despi.elevate:
+    description: Allows you to manage despi
