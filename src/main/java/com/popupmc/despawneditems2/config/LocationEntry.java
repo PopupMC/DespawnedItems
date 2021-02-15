@@ -25,11 +25,6 @@ public class LocationEntry {
         this.plugin = plugin;
     }
 
-    public LocationEntry(@NotNull String str, @NotNull DespawnedItems2 plugin) {
-        loadFromString(str);
-        this.plugin = plugin;
-    }
-
     public LocationEntry(@NotNull DespawnedItems2 plugin) {
         this.plugin = plugin;
     }
@@ -38,8 +33,7 @@ public class LocationEntry {
         return location.getBlockX() + ";" +
                 location.getBlockY() + ";" +
                 location.getBlockZ() + ";" +
-                location.getWorld() + ";" +
-                owner.toString();
+                location.getWorld();
     }
 
     public boolean equals(@NotNull LocationEntry entry2) {
@@ -69,9 +63,9 @@ public class LocationEntry {
         return this.owner.equals(owner);
     }
 
-    public boolean loadFromString(@NotNull String str) {
+    public boolean loadFromString(@NotNull String str, UUID owner) {
         String[] parts = str.split(";");
-        if(parts.length < 5) {
+        if(parts.length < 4) {
             plugin.getLogger().warning("ERROR: Location entry, wrong number of args " + str);
             return false;
         }
@@ -81,7 +75,6 @@ public class LocationEntry {
             int y = Integer.parseInt(parts[1]);
             int z = Integer.parseInt(parts[2]);
             World world = Bukkit.getWorld(parts[3]);
-            UUID uuid = UUID.fromString(parts[4]);
 
             if(world == null) {
                 plugin.getLogger().warning("ERROR: Location entry world is null " + str);
@@ -89,7 +82,7 @@ public class LocationEntry {
             }
 
             this.location = new Location(world, x, y, z);
-            this.owner = uuid;
+            this.owner = owner;
         }
         catch (IllegalArgumentException ex) {
             plugin.getLogger().warning("ERROR: Unable to parse location entry " + str);
@@ -99,9 +92,9 @@ public class LocationEntry {
         return true;
     }
 
-    public static @Nullable LocationEntry fromString(String str, @NotNull DespawnedItems2 plugin) {
+    public static @Nullable LocationEntry fromString(String str, UUID owner, @NotNull DespawnedItems2 plugin) {
         LocationEntry entry = new LocationEntry(plugin);
-        boolean result = entry.loadFromString(str);
+        boolean result = entry.loadFromString(str, owner);
 
         if(!result)
             return null;

@@ -15,9 +15,9 @@ abstract public class AbstractDespiCommand {
     // Takes command action configuration and registers it
     public AbstractDespiCommand(@NotNull DespawnedItems2 plugin, @NotNull String action) {
         this.plugin = plugin;
-        this.action = action;
+        this.action = action.toLowerCase();
 
-        OnDespiCommand.despiCommands.put(action, this);
+        OnDespiCommand.despiCommands.put(action.toLowerCase(), this);
     }
 
     // Code that runs the command

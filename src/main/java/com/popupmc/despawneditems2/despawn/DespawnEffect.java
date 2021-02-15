@@ -93,6 +93,14 @@ public class DespawnEffect {
         }
     }
 
+    public void forceSelfDestroy() {
+        // Remove saved reference that prevents GC (thus allowing GC)
+        plugin.effectsPlaying.remove(this);
+
+        // Tell Bukkit to stop the task
+        inst.cancel();
+    }
+
     // Mark end of loop
     public void loopEnd() {
         // Decrement loops left and see if it needs to be self-destroyed

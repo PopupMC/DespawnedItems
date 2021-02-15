@@ -66,6 +66,8 @@ public class DespawnProcess {
         // If no more loops left then stop here and self-destroy
         // to prevent infinite loops
         if(loopsLeft <= 0) {
+            plugin.getLogger().warning("WARNING: Despawn ended without being able to find a location");
+            plugin.getLogger().warning("WARNING: Is everything full?");
             selfDestroy();
             return;
         }

@@ -51,29 +51,11 @@ public class OnDespiCommand implements CommandExecutor {
         return despiCommand.runCommand(sender, args);
 
 //        switch (action) {
-//            // Return number of locations in memory
-//            case "locations":
-//                return onCommandLocations(sender);
-//            // Return number of indexes left to place items in
-//            // All locations are evenly used to prevent items from piling up in a few
-//            // locations but not others
-//            case "indexes":
-//                return onCommandIndexes(sender);
-//            // Rebuild indexes
-//            case "rebuild-index":
-//                return onCommandRebuildIndex(sender);
-//            // Number of ongoing active effects
-//            case "active-effects":
-//                return onCommandActiveEffects(sender);
 //            // Number of ongoing despawns being processed
 //            case "active-despawns":
 //                return onCommandActiveDespawns(sender);
 //            // Removes all locations, resets rnd-index, and adds a single location for debugging
 //            // to undo use /despi load
-//            case "solo-add":
-//                return onCommandSoloAdd(sender);
-//            // Remove all of a certain material from all chests
-//            // Very handy for trash items or overly stocked items
 //            case "remove-materials":
 //                return onCommandRemoveMaterials(sender, args);
 //        }
@@ -85,6 +67,10 @@ public class OnDespiCommand implements CommandExecutor {
         new OnDespiCommandExists(plugin);
         new OnDespiCommandReload(plugin);
         new OnDespiCommandSave(plugin);
+        new OnDespiCommandLocations(plugin);
+        new OnDespiCommandClear(plugin);
+        new OnDespiCommandIndexes(plugin);
+        new OnDespiCommandEffects(plugin);
     }
 
     public final DespawnedItems2 plugin;

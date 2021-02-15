@@ -19,7 +19,7 @@ public class DespawnIndexes {
 
         // Add in all the location indexes
         int counter = 0;
-        for(LocationEntry ignored : plugin.config.fileLocations.locationEntries) {
+        for(LocationEntry ignored : new ArrayList<>(plugin.config.fileLocations.locationEntries)) {
             locationEntryIndexes.add(counter);
             counter++;
         }

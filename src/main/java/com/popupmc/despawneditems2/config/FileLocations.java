@@ -10,9 +10,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.*;
 
 public class FileLocations {
     public FileLocations(@NotNull DespawnedItems2 plugin) {
@@ -20,24 +22,76 @@ public class FileLocations {
         load();
     }
 
+    public @NotNull Path getplayerDataDir() {
+        return Paths.get(plugin.getDataFolder().toPath().toString(), "userdata");
+    }
+
+    public boolean ensurePlayerDataDirExists() {
+        try {
+            Files.createDirectories(getplayerDataDir());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+    }
+
     public void load() {
+
+        // Ensure player data exists
+        if (!ensurePlayerDataDirExists())
+            return;
+
+        File folder = new File(getplayerDataDir().toString());
+        File[] listOfFiles = folder.listFiles();
+
+        for(File file : listOfFiles) {
+            if(!file.getName().endsWith(".yml"))
+                continue;
+
+            String uuidStr = file.getName().substring(0, file.getName().length() - 4);
+            UUID owner;
+
+            try {
+                plugin.getLogger().info("Attempting to convert file name to UUID: " + uuidStr);
+                owner = UUID.fromString(uuidStr);
+            }
+            catch (IllegalArgumentException ex) {
+                plugin.getLogger().info("Failed");
+                continue;
+            }
+
+            loadFile(owner, file);
+        }
+
+        // Rebuild indexes
+        plugin.despawnIndexes.rebuildIndexes();
+    }
+
+    public void loadFile(@NotNull UUID owner, @NotNull File file) {
         // Get locations file
-        File fileLocations = new File(plugin.getDataFolder(), "locations.yml");
         FileConfiguration fileLocationsConfig = new YamlConfiguration();
 
-        // Save only if doesn't exist to prevent annoying warning, this is literally the dumbest functionality
-        // By definition if I say don't replace then warning me that your not replacing is pretty silly and stupid
-        // and causes me to have to write extra code to prevent that warning defeating the whole purpose of the option
-        if(!fileLocations.exists()) {
-            plugin.saveResource("locations.yml", false);
+        // Create from template if doesn't exist
+        if(!file.exists()) {
+            try {
+                Files.copy(
+                        Objects.requireNonNull(plugin.getResource("locations.yml")),
+                        file.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
         }
 
         // Load locations file, prepare for errors
         try {
-            fileLocationsConfig.load(fileLocations);
+            fileLocationsConfig.load(file);
         }
         catch (IOException | InvalidConfigurationException ex) {
-            plugin.getLogger().warning("Unable to load locations.yml file");
+            plugin.getLogger().warning("Unable to load file " + file.getName());
             ex.printStackTrace();
             return;
         }
@@ -47,7 +101,7 @@ public class FileLocations {
 
         // Loop through each location
         for(String flattenedLocationEntry : flattenedLocationEntries) {
-            LocationEntry locationEntry = LocationEntry.fromString(flattenedLocationEntry, plugin);
+            LocationEntry locationEntry = LocationEntry.fromString(flattenedLocationEntry, owner, plugin);
             if(locationEntry == null) {
                 plugin.getLogger().warning("WARNING: Unable to load location entry, skipping " + flattenedLocationEntry);
                 continue;
@@ -63,28 +117,54 @@ public class FileLocations {
     }
 
     public void save() {
+        // Ensure player data exists
+        if (!ensurePlayerDataDirExists())
+            return;
+
+        // Split location entries up into groups by owner
+        Hashtable<UUID, ArrayList<LocationEntry>> splitFiles = new Hashtable<>();
+
+        for(LocationEntry locationEntry : new ArrayList<>(locationEntries)) {
+
+            UUID owner = locationEntry.owner;
+
+            if(!splitFiles.containsKey(owner))
+                splitFiles.put(owner, new ArrayList<>());
+
+            ArrayList<LocationEntry> splitLocationEntries = splitFiles.get(owner);
+            splitLocationEntries.add(locationEntry);
+
+            splitFiles.put(owner, splitLocationEntries);
+        }
+
+        for(Map.Entry<UUID, ArrayList<LocationEntry>> entry : splitFiles.entrySet()) {
+            // Get file to user data
+            Path path = Paths.get(getplayerDataDir().toString(), entry.getKey().toString() + ".yml");
+            File file = new File(path.toString());
+
+            // Save it
+            saveFile(file, entry.getValue());
+        }
+    }
+
+    public void saveFile(@NotNull File file, @NotNull ArrayList<LocationEntry> splitLocationEntries) {
         // Create new empty list
         ArrayList<String> flattenedLocationEntries = new ArrayList<>();
 
         // Add in all the locations flattened
-        for(LocationEntry locationEntry : locationEntries) {
+        for(LocationEntry locationEntry : splitLocationEntries) {
             flattenedLocationEntries.add(locationEntry.toString());
         }
 
         // Get locations file
-        File fileLocations = new File(plugin.getDataFolder(), "locations.yml");
         FileConfiguration fileLocationsConfig = new YamlConfiguration();
-
-        if(!fileLocations.exists()) {
-            plugin.saveResource("locations.yml", false);
-        }
 
         // Save list into YML file
         fileLocationsConfig.set("locations", flattenedLocationEntries);
 
         // Save YML file
         try {
-            fileLocationsConfig.save(fileLocations);
+            fileLocationsConfig.save(file);
         } catch (IOException ex) {
             plugin.getLogger().warning("Unable to save locations.yml file");
             ex.printStackTrace();
@@ -173,19 +253,6 @@ public class FileLocations {
         return count;
     }
 
-    public int removeAll(@NotNull Location location, @NotNull UUID owner) {
-        boolean result;
-        int count = 0;
-
-        do {
-            result = remove(location, owner);
-            if(result)
-                count++;
-        }while (result);
-
-        return count;
-    }
-
     public int removeAll(@NotNull UUID owner) {
         boolean result;
         int count = 0;
@@ -199,13 +266,19 @@ public class FileLocations {
         return count;
     }
 
+    public int removeAll() {
+        int count = locationEntries.size();
+        locationEntries.clear();
+        return count;
+    }
+
     public @Nullable LocationEntry exists(@NotNull LocationEntry entry) {
 
         // Set return value to be null (Doesn't exist)
         LocationEntry ret = null;
 
         // Attempt to find it in the locations
-        for(LocationEntry entry2 : locationEntries) {
+        for(LocationEntry entry2 : new ArrayList<>(locationEntries)) {
 
             // Look for a precise match
             if(entry.equals(entry2)) {
@@ -225,7 +298,7 @@ public class FileLocations {
         LocationEntry ret = null;
 
         // Attempt to find it in the locations
-        for(LocationEntry entry2 : locationEntries) {
+        for(LocationEntry entry2 : new ArrayList<>(locationEntries)) {
             // Look for a precise match
             if(entry2.equals(owner)) {
                 // When found save reference to precise match and stop looking
@@ -244,7 +317,7 @@ public class FileLocations {
         LocationEntry ret = null;
 
         // Attempt to find it in the locations
-        for(LocationEntry entry2 : locationEntries) {
+        for(LocationEntry entry2 : new ArrayList<>(locationEntries)) {
 
             // Look for a precise match
             if(entry2.equals(location, owner)) {
@@ -264,7 +337,7 @@ public class FileLocations {
         LocationEntry ret = null;
 
         // Attempt to find it in the locations
-        for(LocationEntry entry2 : locationEntries) {
+        for(LocationEntry entry2 : new ArrayList<>(locationEntries)) {
 
             // Look for a precise match
             if(entry2.equals(location)) {
@@ -284,19 +357,6 @@ public class FileLocations {
         LocationEntry locationEntry;
         do {
             locationEntry = exists(owner);
-            if(locationEntry != null)
-                foundLocationEntries.add(locationEntry);
-        }while (locationEntry != null);
-
-        return foundLocationEntries;
-    }
-
-    public @NotNull ArrayList<LocationEntry> existsAll(@NotNull Location location, @NotNull UUID owner) {
-        ArrayList<LocationEntry> foundLocationEntries = new ArrayList<>();
-
-        LocationEntry locationEntry;
-        do {
-            locationEntry = exists(location, owner);
             if(locationEntry != null)
                 foundLocationEntries.add(locationEntry);
         }while (locationEntry != null);
