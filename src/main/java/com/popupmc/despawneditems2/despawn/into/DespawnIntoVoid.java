@@ -4,6 +4,7 @@ import com.popupmc.despawneditems2.DespawnedItems2;
 import com.popupmc.despawneditems2.despawn.DespawnProcess;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class DespawnIntoVoid extends AbstractDespawnInto {
@@ -30,6 +31,11 @@ public class DespawnIntoVoid extends AbstractDespawnInto {
 
     @Override
     public boolean removeFrom(@NotNull Material material, @NotNull Block targetBlock) {
+        return false;
+    }
+
+    @Override
+    public boolean removeFrom(@NotNull ItemStack material, @NotNull Block targetBlock) {
         return false;
     }
 }

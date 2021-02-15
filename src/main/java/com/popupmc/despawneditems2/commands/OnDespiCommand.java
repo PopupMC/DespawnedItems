@@ -51,11 +51,6 @@ public class OnDespiCommand implements CommandExecutor {
         return despiCommand.runCommand(sender, args);
 
 //        switch (action) {
-//            // Number of ongoing despawns being processed
-//            case "active-despawns":
-//                return onCommandActiveDespawns(sender);
-//            // Removes all locations, resets rnd-index, and adds a single location for debugging
-//            // to undo use /despi load
 //            case "remove-materials":
 //                return onCommandRemoveMaterials(sender, args);
 //        }
@@ -71,6 +66,8 @@ public class OnDespiCommand implements CommandExecutor {
         new OnDespiCommandClear(plugin);
         new OnDespiCommandIndexes(plugin);
         new OnDespiCommandEffects(plugin);
+        new OnDespiCommandDespawn(plugin);
+        new OnDespiCommandPurge(plugin);
     }
 
     public final DespawnedItems2 plugin;

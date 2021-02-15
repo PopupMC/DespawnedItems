@@ -85,6 +85,18 @@ public class DespawnIntoCooker extends AbstractDespawnInto {
         return true;
     }
 
+    @Override
+    public boolean removeFrom(@NotNull ItemStack material, @NotNull Block targetBlock) {
+        // Get Inventory
+        Inventory inventory = getInventory(targetBlock);
+        if(inventory == null)
+            return false;
+
+        inventory.remove(material);
+        targetBlock.getState().update();
+        return true;
+    }
+
     // Simply adds the despawned item amount to a stack without going over
     public DespawnIntoResult addToStack(@NotNull DespawnProcess process,
                               @NotNull Block targetBlock,

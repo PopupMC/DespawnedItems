@@ -4,6 +4,7 @@ import com.popupmc.despawneditems2.DespawnedItems2;
 import com.popupmc.despawneditems2.despawn.DespawnProcess;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 // It's not possible for a #!!!@@!@##@@@ huyman on earth to do this
@@ -35,6 +36,11 @@ public class DespawnIntoAir extends AbstractDespawnInto {
 
     @Override
     public boolean removeFrom(@NotNull Material material, @NotNull Block targetBlock) {
+        return false;
+    }
+
+    @Override
+    public boolean removeFrom(@NotNull ItemStack material, @NotNull Block targetBlock) {
         return false;
     }
 }

@@ -78,4 +78,17 @@ public class DespawnIntoStorage extends AbstractDespawnInto {
 
         return true;
     }
+
+    @Override
+    public boolean removeFrom(@NotNull ItemStack material, @NotNull Block targetBlock) {
+        Inventory inventory = getInventory(targetBlock);
+        if(inventory == null) {
+            return false;
+        }
+
+        inventory.remove(material);
+        targetBlock.getState().update();
+
+        return true;
+    }
 }

@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,30 +20,53 @@ import java.util.UUID;
 public class RemoveMaterials {
 
     public RemoveMaterials(@NotNull CommandSender sender,
-                           @NotNull ArrayList<Material> materials,
+                           @Nullable ArrayList<Material> materials,
+                           @Nullable ItemStack item,
                            @NotNull DespawnedItems2 plugin,
-                           @Nullable UUID owner) {
+                           @Nullable UUID owner,
+                           @Nullable UUID senderID) {
         this.plugin = plugin;
         this.sender = sender;
         this.materials = materials;
         this.owner = owner;
+        this.item = item;
+        this.senderID = senderID;
+
+        if(materials == null && item == null) {
+            sender.sendMessage(ChatColor.RED + "ERROR: Both material and item were null, refusing to start task...");
+            invalid = true;
+            return;
+        }
+
+        if(senderID != null) {
+            if(plugin.removeMaterialsInst.containsKey(senderID)) {
+                plugin.removeMaterialsInst.get(senderID).forceSelfDestroy();
+                plugin.removeMaterialsInst.remove(senderID);
+            }
+
+            plugin.removeMaterialsInst.put(senderID, this);
+        }
+
+        // Grab list of locations
+        if(owner != null) {
+            this.senderLocationEntries = plugin.config.fileLocations.existsAll(owner);
+        }
+        else
+            this.senderLocationEntries = new ArrayList<>(plugin.config.fileLocations.locationEntries);
 
         newLoop();
     }
 
     public void newLoop() {
+        if(invalid)
+            return;
+
         // Wait a tick
         new BukkitRunnable() {
             @Override
             public void run() {
                 // Get location entry
-                LocationEntry locationEntry = plugin.config.fileLocations.locationEntries.get(locationIndex);
-
-                // Skip if owner is provided but doesn't match location
-                if(owner != null && !locationEntry.equals(owner)) {
-                    loopEnd();
-                    return;
-                }
+                LocationEntry locationEntry = senderLocationEntries.get(locationIndex);
 
                 // Load async
                 loadWorld(locationEntry);
@@ -52,7 +76,9 @@ public class RemoveMaterials {
 
     public void forceSelfDestroy() {
         // Remove saved reference that prevents GC (thus allowing GC)
-        plugin.removeMaterialsInst = null;
+        plugin.removeMaterialsInst.remove(senderID);
+
+        invalid = true;
 
         // Announce completion
         sender.sendMessage(ChatColor.GOLD + "Completed!");
@@ -60,7 +86,10 @@ public class RemoveMaterials {
 
     // check if it needs to be self-destroyed or not
     public void checkSelfDestroy() {
-        if (locationIndex >= plugin.config.fileLocations.locationEntries.size()) {
+        if(invalid)
+            return;
+
+        if (locationIndex >= senderLocationEntries.size()) {
             forceSelfDestroy();
         }
         else {
@@ -69,12 +98,17 @@ public class RemoveMaterials {
     }
 
     public void loadWorld(@NotNull LocationEntry locationEntry) {
+        if(invalid)
+            return;
+
         Location location = locationEntry.location;
         location.getWorld().getChunkAtAsync(location.getBlockX(), location.getBlockZ())
                 .thenRun(() -> worldIsLoaded(locationEntry));
     }
 
     public void worldIsLoaded(LocationEntry locationEntry) {
+        if(invalid)
+            return;
 
         // Get Location
         Location location = locationEntry.location;
@@ -85,6 +119,8 @@ public class RemoveMaterials {
 
         // Go through the despawnable intos list
         for(AbstractDespawnInto despawnInto : DespawnProcess.despawnIntos) {
+            if(invalid)
+                return;
 
             // Skip if doesn't apply to this into
             if(!despawnInto.doesApply(block))
@@ -93,15 +129,24 @@ public class RemoveMaterials {
             // We've found the into for this location
 
             // Pass control to the into
-            for(Material material : materials) {
-                despawnInto.removeFrom(material, block);
+            if(materials != null) {
+                for (Material material : materials) {
+                    if(invalid)
+                        return;
+
+                    despawnInto.removeFrom(material, block);
+                }
+            }
+
+            if(item != null) {
+                despawnInto.removeFrom(item, block);
             }
 
             // Announce progress every 20 inventory
             if((locationIndex % 20) == 0)
                 sender.sendMessage(ChatColor.YELLOW + "Still processing... " +
                         locationIndex + " / " +
-                        plugin.config.fileLocations.locationEntries.size());
+                        senderLocationEntries.size());
 
             // Onto the next location
             break;
@@ -113,6 +158,9 @@ public class RemoveMaterials {
 
     // Mark end of loop
     public void loopEnd() {
+        if(invalid)
+            return;
+
         // Increment loop index and see if it needs to be self-destroyed
         locationIndex += 1;
         checkSelfDestroy();
@@ -122,7 +170,12 @@ public class RemoveMaterials {
     int locationIndex = 0;
     public final CommandSender sender;
     public final ArrayList<Material> materials;
+    public final ItemStack item;
     public final UUID owner;
+    public final UUID senderID;
+    public ArrayList<LocationEntry> senderLocationEntries;
+
+    public boolean invalid = false;
 
     // Plugin
     public final DespawnedItems2 plugin;

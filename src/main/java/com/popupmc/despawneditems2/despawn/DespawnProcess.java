@@ -17,6 +17,8 @@ public class DespawnProcess {
         this.item = item;
         this.loopsLeft = plugin.config.fileLocations.locationEntries.size();
 
+        plugin.despawnProcesses.add(this);
+
         // These are the functionality that attempts to despawnIndexes a given item into something
         // the order matters
         if(despawnIntos.isEmpty()) {
@@ -38,6 +40,9 @@ public class DespawnProcess {
 
     // Begins a new loop
     public void newLoop() {
+        if(invalid)
+            return;
+
         // Delay by 1 tick
         new BukkitRunnable() {
             @Override
@@ -53,6 +58,9 @@ public class DespawnProcess {
 
     // Async loads the world first
     public void loadWorld(@NotNull LocationEntry locationEntry) {
+        if(invalid)
+            return;
+
         Location location = locationEntry.location;
         location.getWorld().getChunkAtAsync(location.getBlockX(), location.getBlockZ())
                 .thenRun(() -> worldIsLoaded(locationEntry));
@@ -60,6 +68,9 @@ public class DespawnProcess {
 
     // When a loop has ended and is ready to self-destroy or enter a new loop
     public void endLoop() {
+        if(invalid)
+            return;
+
         // Decrement loops left (To prevent infinite loops)
         loopsLeft--;
 
@@ -79,10 +90,14 @@ public class DespawnProcess {
     // Simply remove this instance and call no more new loops
     public void selfDestroy() {
         plugin.despawnProcesses.remove(this);
+        invalid = true;
     }
 
     // With the chunk loaded we can go ahead and directly work with it
     public void worldIsLoaded(@NotNull LocationEntry locationEntry) {
+        if(invalid)
+            return;
+
         // Get Location
         Location targetLocation = locationEntry.location;
 
@@ -92,6 +107,8 @@ public class DespawnProcess {
 
         // Go through the despawnable intos list
         for(AbstractDespawnInto despawnInto : despawnIntos) {
+            if(invalid)
+                return;
 
             // Skip if doesn't apply to this into
             if(!despawnInto.doesApply(targetBlock))
@@ -121,6 +138,9 @@ public class DespawnProcess {
     }
 
     public void playEffect(@NotNull LocationEntry locationEntry) {
+        if(invalid)
+            return;
+
         if(plugin.config.fileConfig.soundEnabled || plugin.config.fileConfig.particlesEnabled) {
             // Play particles and sound for a short time
             new DespawnEffect(locationEntry, plugin);
@@ -130,6 +150,8 @@ public class DespawnProcess {
     public final DespawnedItems2 plugin;
     public ItemStack item;
     public int loopsLeft;
+
+    public boolean invalid = false;
 
     public final static ArrayList<AbstractDespawnInto> despawnIntos = new ArrayList<>();
 }
