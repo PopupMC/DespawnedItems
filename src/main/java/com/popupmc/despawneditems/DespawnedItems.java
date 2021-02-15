@@ -21,7 +21,7 @@ public class DespawnedItems extends JavaPlugin implements Listener {
         // Load Config Locations
         DespawnedItemsConfig.load();
 
-        // Register Item Despawn Event
+        // Register Item DespawnIndexes Event
         Bukkit.getPluginManager().registerEvents(new OnItemDespawnEvent(), this);
 
         // Register /despi command executor

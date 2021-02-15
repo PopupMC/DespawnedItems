@@ -14,36 +14,10 @@ import java.util.ArrayList;
 // Handles the /despi command
 public class OnDespiCommand implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-
-        // Ensure this is a player
-        if(!(sender instanceof Player)) {
-            sender.sendMessage("Only a player can execute this command");
-            return false;
-        }
-
-        // Get player
-        Player player = (Player)sender;
-
-        // Check for permission and block if no permission
-        if(!player.hasPermission("despi.use")) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command");
-            return false;
-        }
-
-        // Check for argument length, has to have at least 1 arg
-        // Block with error if not
-        if(args.length < 1) {
-            sender.sendMessage(ChatColor.GOLD + "Must specify an action");
-            return false;
-        }
-
         // Get that argument and process command accordignly
         String action = args[0];
 
         switch (action) {
-                // Adds the location to list
-            case "add":
-                return onCommandAdd(sender);
                 // Removes the location from list
             case "rem":
                 return onCommandRem(sender);
@@ -87,34 +61,6 @@ public class OnDespiCommand implements CommandExecutor {
         // Notify and quit
         sender.sendMessage(ChatColor.GOLD + "Invalid action specified");
         return false;
-    }
-
-    private boolean onCommandAdd(@NotNull CommandSender sender) {
-        // Get valid useable block being looked at, will be null if not both valid and useable
-        // A message is already sent to the user
-        Location blockLoc = getTargLoc(sender);
-
-        if(blockLoc == null)
-            return false;
-
-        // Attempt to add the location
-        if(DespawnedItemsConfig.add(blockLoc)) {
-            sender.sendMessage(ChatColor.GREEN + "Successfully added location " +
-                    blockLoc.getBlockX() + ", " +
-                    blockLoc.getBlockY() + ", " +
-                    blockLoc.getBlockZ() + " in world " +
-                    blockLoc.getWorld().getName());
-            return true;
-        }
-        else {
-            sender.sendMessage(ChatColor.GOLD + "Location " +
-                    blockLoc.getBlockX() + ", " +
-                    blockLoc.getBlockY() + ", " +
-                    blockLoc.getBlockZ() + " in world " +
-                    blockLoc.getWorld().getName() + " " +
-                    "Already exists!");
-            return false;
-        }
     }
 
     private boolean onCommandRem(@NotNull CommandSender sender) {
