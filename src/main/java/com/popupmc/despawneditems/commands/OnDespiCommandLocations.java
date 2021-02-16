@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 public class OnDespiCommandLocations extends AbstractDespiCommand {
     public OnDespiCommandLocations(@NotNull DespawnedItems plugin) {
-        super(plugin, "locations");
+        super(plugin, "locations", "Obtains all of your locations.");
     }
 
     // despi [locations, <player>] - All locations owned by a player
@@ -41,6 +41,21 @@ public class OnDespiCommandLocations extends AbstractDespiCommand {
             return existsAnyLocationByName(sender, playerNameOrAny);
 
         return existsAllOwnersByLocation(sender);
+    }
+
+    @Override
+    public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(canBeElevated(sender)) {
+            sender.sendMessage(ChatColor.GRAY + "/despi locations [<player>|here|total|solo|undo-solo]");
+        }
+        else {
+            sender.sendMessage(ChatColor.GRAY + "/despi locations");
+        }
+    }
+
+    @Override
+    public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
+        return true;
     }
 
     public boolean totalLocationCount(@NotNull CommandSender sender) {
@@ -93,13 +108,13 @@ public class OnDespiCommandLocations extends AbstractDespiCommand {
         if(ownerName != null && !canBeElevated("You don't have permission to check for existence for someone elses location", sender))
             return false;
 
-        Player player;
+        OfflinePlayer player;
 
         if(ownerName == null) {
             player = isPlayer(sender);
         }
         else {
-            player = getPlayer(ownerName, sender);
+            player = getPlayer(ownerName);
         }
         if(player == null)
             return false;

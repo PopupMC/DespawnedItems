@@ -1,7 +1,9 @@
 package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class OnDespiCommandClear extends AbstractDespiCommand {
     public OnDespiCommandClear(@NotNull DespawnedItems plugin) {
-        super(plugin, "clear");
+        super(plugin, "clear", "Clears all of your despawn locations");
     }
 
     // despi [clear, <player>] - All locations owned by a player
@@ -31,6 +33,21 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
         return removeAllOwnersByLocation(sender);
     }
 
+    @Override
+    public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(canBeElevated(sender)) {
+            sender.sendMessage(ChatColor.GRAY + "/despi clear [<player>|here|total]");
+        }
+        else {
+            sender.sendMessage(ChatColor.GRAY + "/despi clear");
+        }
+    }
+
+    @Override
+    public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
+        return true;
+    }
+
     public boolean removeAllLocations(@NotNull CommandSender sender) {
         if(!canBeElevated("You don't have permission to clear all locations", sender))
             return false;
@@ -43,13 +60,13 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
         if(ownerName != null && !canBeElevated("You don't have permission to remove all locations of someone else", sender))
             return false;
 
-        Player player;
+        OfflinePlayer player;
 
         if(ownerName == null) {
             player = isPlayer(sender);
         }
         else {
-            player = getPlayer(ownerName, sender);
+            player = getPlayer(ownerName);
         }
         if(player == null)
             return false;

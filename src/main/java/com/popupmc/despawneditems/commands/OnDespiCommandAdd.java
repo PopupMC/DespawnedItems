@@ -1,7 +1,9 @@
 package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 public class OnDespiCommandAdd extends AbstractDespiCommand {
 
     public OnDespiCommandAdd(@NotNull DespawnedItems plugin) {
-        super(plugin, "add");
+        super(plugin, "add", "Adds a location to receive despawn items");
     }
 
     // despi [add, <player>] - Add location as yourself or someone else
@@ -32,18 +34,31 @@ public class OnDespiCommandAdd extends AbstractDespiCommand {
             return addLocation((Player)sender, null);
     }
 
+    @Override
+    public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(canBeElevated(sender)) {
+            sender.sendMessage(ChatColor.GRAY + "/despi add <player>");
+        }
+        else {
+            sender.sendMessage(ChatColor.GRAY + "/despi add");
+        }
+    }
+
+    @Override
+    public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
+        return true;
+    }
+
     public boolean addLocationAsPlayer(@NotNull Player sender, @NotNull String otherPlayerName) {
         if(!canBeElevated("You don't have permission to add ownership of others", sender))
             return false;
 
-        Player otherPlayer = getPlayer(otherPlayerName, sender);
-        if(otherPlayer == null)
-            return false;
+        OfflinePlayer otherPlayer = getPlayer(otherPlayerName);
 
         return addLocation(sender, otherPlayer);
     }
 
-    public boolean addLocation(@NotNull Player sender, @Nullable Player owner) {
+    public boolean addLocation(@NotNull Player sender, @Nullable OfflinePlayer owner) {
         if(owner == null)
             owner = sender;
 

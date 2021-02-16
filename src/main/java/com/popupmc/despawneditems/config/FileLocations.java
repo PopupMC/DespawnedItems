@@ -66,7 +66,8 @@ public class FileLocations {
         }
 
         // Rebuild indexes
-        plugin.despawnIndexes.rebuildIndexes();
+        if(plugin.despawnIndexes != null)
+            plugin.despawnIndexes.rebuildIndexes();
     }
 
     public void loadFile(@NotNull UUID owner, @NotNull File file) {
@@ -354,12 +355,10 @@ public class FileLocations {
     public @NotNull ArrayList<LocationEntry> existsAll(@NotNull UUID owner) {
         ArrayList<LocationEntry> foundLocationEntries = new ArrayList<>();
 
-        LocationEntry locationEntry;
-        do {
-            locationEntry = exists(owner);
-            if(locationEntry != null)
+        for(LocationEntry locationEntry : new ArrayList<>(this.locationEntries)) {
+            if(locationEntry.equals(owner))
                 foundLocationEntries.add(locationEntry);
-        }while (locationEntry != null);
+        }
 
         return foundLocationEntries;
     }
@@ -367,12 +366,10 @@ public class FileLocations {
     public @NotNull ArrayList<LocationEntry> existsAll(@NotNull Location location) {
         ArrayList<LocationEntry> foundLocationEntries = new ArrayList<>();
 
-        LocationEntry locationEntry;
-        do {
-            locationEntry = exists(location);
-            if(locationEntry != null)
+        for(LocationEntry locationEntry : new ArrayList<>(this.locationEntries)) {
+            if(locationEntry.equals(location))
                 foundLocationEntries.add(locationEntry);
-        }while (locationEntry != null);
+        }
 
         return foundLocationEntries;
     }

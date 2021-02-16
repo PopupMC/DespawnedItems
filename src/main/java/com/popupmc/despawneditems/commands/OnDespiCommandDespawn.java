@@ -2,6 +2,7 @@ package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.despawn.DespawnProcess;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 
 public class OnDespiCommandDespawn extends AbstractDespiCommand {
     public OnDespiCommandDespawn(@NotNull DespawnedItems plugin) {
-        super(plugin, "despawn");
+        super(plugin, "despawn", "Manages despawning often for testing");
     }
 
     // despi [despawn, count]
@@ -59,6 +60,21 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
             return clear(sender);
 
         return sendCount(sender);
+    }
+
+    @Override
+    public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(canBeElevated(sender)) {
+            sender.sendMessage(ChatColor.GRAY + "/despi despawn count|create-hand|create material <materials> <amt>|clear");
+        }
+        else {
+            sender.sendMessage(ChatColor.GRAY + "You don't have access to this command");
+        }
+    }
+
+    @Override
+    public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
+        return canBeElevated(sender);
     }
 
     public boolean sendCount(@NotNull CommandSender sender) {

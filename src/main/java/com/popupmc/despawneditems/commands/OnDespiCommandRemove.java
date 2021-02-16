@@ -1,7 +1,9 @@
 package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -9,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class OnDespiCommandRemove extends AbstractDespiCommand {
     public OnDespiCommandRemove(@NotNull DespawnedItems plugin) {
-        super(plugin, "remove");
+        super(plugin, "remove", "Removes location your pointing at from despawn");
     }
 
     // despi [remove, player, <player>] - Removes the first location owned by the player
@@ -38,13 +40,26 @@ public class OnDespiCommandRemove extends AbstractDespiCommand {
         return removeLocation((Player)sender, null);
     }
 
+    @Override
+    public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(canBeElevated(sender)) {
+            sender.sendMessage(ChatColor.GRAY + "/despi remove [[player <player>]|<player>|any]");
+        }
+        else {
+            sender.sendMessage(ChatColor.GRAY + "/despi remove");
+        }
+    }
+
+    @Override
+    public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
+        return true;
+    }
+
     public boolean removeAnyLocationByName(@NotNull CommandSender sender, @NotNull String ownerName) {
         if(!canBeElevated("You don't have permission to remove someone elses location", sender))
             return false;
 
-        Player player = getPlayer(ownerName, sender);
-        if(player == null)
-            return false;
+        OfflinePlayer player = getPlayer(ownerName);
 
         boolean success = plugin.config.fileLocations.remove(player.getUniqueId());
 
@@ -63,18 +78,16 @@ public class OnDespiCommandRemove extends AbstractDespiCommand {
         if(ownerName.equalsIgnoreCase("any"))
             return removeLocation(sender, null, true);
 
-        Player player = getPlayer(ownerName, sender);
-        if(player == null)
-            return false;
+        OfflinePlayer player = getPlayer(ownerName);
 
         return removeLocation(sender, player);
     }
 
-    public boolean removeLocation(@NotNull Player sender, @Nullable Player owner) {
+    public boolean removeLocation(@NotNull Player sender, @Nullable OfflinePlayer owner) {
         return removeLocation(sender, owner, false);
     }
 
-    public boolean removeLocation(@NotNull Player sender, @Nullable Player owner, boolean skipOwner) {
+    public boolean removeLocation(@NotNull Player sender, @Nullable OfflinePlayer owner, boolean skipOwner) {
         if(owner == null)
             owner = sender;
 

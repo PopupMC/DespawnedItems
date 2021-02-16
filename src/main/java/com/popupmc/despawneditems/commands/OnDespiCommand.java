@@ -8,6 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class OnDespiCommand implements CommandExecutor {
 
@@ -34,7 +35,7 @@ public class OnDespiCommand implements CommandExecutor {
         // Check for argument length, has to have at least 1 arg
         // Block with error if not
         if(args.length < 1) {
-            sender.sendMessage(ChatColor.GOLD + "Must specify an action");
+            showDescriptions(sender, args);
             return false;
         }
 
@@ -43,17 +44,25 @@ public class OnDespiCommand implements CommandExecutor {
 
         // Stop if no such registered command
         if(despiCommand == null) {
-            sender.sendMessage(ChatColor.GOLD + "Invalid action specified");
-            return false;
+            showDescriptions(sender, args);
+            return true;
         }
 
         // Run command
-        return despiCommand.runCommand(sender, args);
+        boolean result = despiCommand.runCommand(sender, args);
 
-//        switch (action) {
-//            case "remove-materials":
-//                return onCommandRemoveMaterials(sender, args);
-//        }
+        if(!result)
+            despiCommand.displayHelp(sender, args);
+
+        return true;
+    }
+
+    public void showDescriptions(@NotNull CommandSender sender, @NotNull String[] args) {
+        for(Map.Entry<String, AbstractDespiCommand> commandEntry : despiCommands.entrySet()) {
+            if(commandEntry.getValue().showDescription(sender, args))
+                sender.sendMessage(ChatColor.YELLOW + "/despi " + commandEntry.getKey() + " - " +
+                        ChatColor.GOLD + commandEntry.getValue().description);
+        }
     }
 
     public static void registerDespiCommands(DespawnedItems plugin) {

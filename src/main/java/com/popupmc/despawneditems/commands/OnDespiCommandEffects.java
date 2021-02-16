@@ -3,6 +3,7 @@ package com.popupmc.despawneditems.commands;
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.config.LocationEntry;
 import com.popupmc.despawneditems.despawn.DespawnEffect;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 
 public class OnDespiCommandEffects extends AbstractDespiCommand {
     public OnDespiCommandEffects(@NotNull DespawnedItems plugin) {
-        super(plugin, "effects");
+        super(plugin, "effects", "Manages effects, often for testing");
     }
 
     // despi [effects, count]
@@ -34,6 +35,21 @@ public class OnDespiCommandEffects extends AbstractDespiCommand {
             return clear(sender);
 
         return sendCount(sender);
+    }
+
+    @Override
+    public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(canBeElevated(sender)) {
+            sender.sendMessage(ChatColor.GRAY + "/despi effects count|create|clear");
+        }
+        else {
+            sender.sendMessage(ChatColor.GRAY + "You don't have access to this command");
+        }
+    }
+
+    @Override
+    public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
+        return canBeElevated(sender);
     }
 
     public boolean sendCount(@NotNull CommandSender sender) {

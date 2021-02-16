@@ -32,6 +32,11 @@ public class RemoveMaterials {
         this.item = item;
         this.senderID = senderID;
 
+        if(plugin.config.fileLocations.locationEntries.size() == 0) {
+            this.forceSelfDestroy();
+            return;
+        }
+
         if(materials == null && item == null) {
             sender.sendMessage(ChatColor.RED + "ERROR: Both material and item were null, refusing to start task...");
             invalid = true;

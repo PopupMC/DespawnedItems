@@ -24,10 +24,16 @@ public class LocationEntry {
     }
 
     public @NotNull String toString() {
+
+        plugin.getLogger().info(location.getBlockX() + ";" +
+                location.getBlockY() + ";" +
+                location.getBlockZ() + ";" +
+                location.getWorld().getName());
+
         return location.getBlockX() + ";" +
                 location.getBlockY() + ";" +
                 location.getBlockZ() + ";" +
-                location.getWorld();
+                location.getWorld().getName();
     }
 
     public boolean equals(@NotNull LocationEntry entry2) {

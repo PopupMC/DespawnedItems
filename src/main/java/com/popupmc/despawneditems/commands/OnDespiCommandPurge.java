@@ -3,6 +3,7 @@ package com.popupmc.despawneditems.commands;
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.manage.RemoveMaterials;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -16,7 +17,8 @@ import java.util.UUID;
 
 public class OnDespiCommandPurge extends AbstractDespiCommand {
     public OnDespiCommandPurge(@NotNull DespawnedItems plugin) {
-        super(plugin, "purge");
+        super(plugin, "purge",
+                "Removes a specific item in your hand or all items of a type.");
     }
 
     // despi [purge, <player>, materials, <names>] - All materials owned by player
@@ -46,6 +48,21 @@ public class OnDespiCommandPurge extends AbstractDespiCommand {
             return purgeOwnItem(sender);
 
         return purgeForAnother(sender, arg1, arg2, arg3);
+    }
+
+    @Override
+    public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(canBeElevated(sender)) {
+            sender.sendMessage(ChatColor.GRAY + "/despi purge [<player>|all [materials <materials>]|item]|materials <materials>|item");
+        }
+        else {
+            sender.sendMessage(ChatColor.GRAY + "/despi purge materials <materials>|item");
+        }
+    }
+
+    @Override
+    public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
+        return true;
     }
 
     // despi [purge, all, materials, <names>] - All materials owned by everyone

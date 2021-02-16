@@ -19,6 +19,11 @@ public class DespawnProcess {
 
         plugin.despawnProcesses.add(this);
 
+        if(plugin.config.fileLocations.locationEntries.size() == 0) {
+            this.selfDestroy();
+            return;
+        }
+
         // These are the functionality that attempts to despawnIndexes a given item into something
         // the order matters
         if(despawnIntos.isEmpty()) {

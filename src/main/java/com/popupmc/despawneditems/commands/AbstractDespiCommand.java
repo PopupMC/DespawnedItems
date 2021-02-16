@@ -4,6 +4,7 @@ import com.popupmc.despawneditems.DespawnedItems;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -13,15 +14,18 @@ import org.jetbrains.annotations.Nullable;
 abstract public class AbstractDespiCommand {
 
     // Takes command action configuration and registers it
-    public AbstractDespiCommand(@NotNull DespawnedItems plugin, @NotNull String action) {
+    public AbstractDespiCommand(@NotNull DespawnedItems plugin, @NotNull String action, @NotNull String description) {
         this.plugin = plugin;
         this.action = action.toLowerCase();
+        this.description = description;
 
         OnDespiCommand.despiCommands.put(action.toLowerCase(), this);
     }
 
     // Code that runs the command
     abstract public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args);
+    abstract public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args);
+    abstract public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args);
 
     // Gets target block, first converting CommandSender to a player and gracefully failing if not a player
     public @Nullable Location getTargetLocation(@NotNull CommandSender sender) {
@@ -76,12 +80,8 @@ abstract public class AbstractDespiCommand {
 
     // Gets a player by name returning null if doesn't exist
     // The sender is sent an error message on your behalf
-    public @Nullable Player getPlayer(String name, CommandSender sender) {
-        Player player = Bukkit.getPlayer(name);
-        if(player == null)
-            error("Player not found", sender);
-
-        return player;
+    public @NotNull OfflinePlayer getPlayer(String name) {
+        return Bukkit.getOfflinePlayer(name);
     }
 
     // Checks whether player has permission with optional custom error message, sends error on your behalf
@@ -125,6 +125,7 @@ abstract public class AbstractDespiCommand {
 
     public final DespawnedItems plugin;
     public final String action;
+    public final String description;
 
     public static final String elevatedPermission = "despi.elevated";
 }
