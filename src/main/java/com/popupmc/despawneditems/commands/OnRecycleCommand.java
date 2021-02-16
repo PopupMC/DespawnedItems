@@ -39,8 +39,6 @@ public class OnRecycleCommand implements CommandExecutor {
         new DespawnProcess(item.clone(), plugin);
         player.getInventory().setItemInMainHand(null);
 
-        player.sendMessage("Item Recycled! Thanks for recycling.");
-
         return false;
     }
 

@@ -31,7 +31,7 @@ public class DespawnEffect {
         Location center = locationEntry.location.toCenterLocation();
 
         // Play sound 1 time only if chunk is loaded and if sound enabled
-        if(plugin.config.fileConfig.soundEnabled && world.isChunkLoaded(center.getBlockX(), center.getBlockZ()))
+        if(plugin.config.fileConfig.soundEnabled /*&& world.isChunkLoaded(center.getBlockX(), center.getBlockZ())*/) /// BUGGED
             world.playEffect(center,
                     plugin.config.fileConfig.soundFX,
                     plugin.config.fileConfig.soundData,
@@ -50,13 +50,16 @@ public class DespawnEffect {
         inst = new BukkitRunnable() {
             @Override
             public void run() {
+                // BUGGED
                 // If the chunk is not loaded do nothing, there is no need to load an empty chunk to play
                 // an effect that nobody is going to hear or see
-                if (!world.isChunkLoaded(center.getBlockX(), center.getBlockZ())) {
-                    // End of this loop
-                    self.loopEnd();
-                    return;
-                }
+//                if (!world.isChunkLoaded(center.getBlockX(), center.getBlockZ())) {
+//
+//                    // End of this loop
+//                    self.loopEnd();
+//
+//                    return;
+//                }
 
                 // Play 2 sets of particles at the center of the block
                 // Going out from center to positive and negative space on the X & Z axis

@@ -96,7 +96,7 @@ public class OnDespiCommandEffects extends AbstractDespiCommand {
         if(player == null)
             return false;
 
-        Location location = getTargetLocation(sender);
+        Location location = getTargetLocation(player);
         if(location == null)
             return false;
 
