@@ -6,6 +6,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OnDespiCommandIndexes extends AbstractDespiCommand{
     public OnDespiCommandIndexes(@NotNull DespawnedItems plugin) {
@@ -31,6 +35,22 @@ public class OnDespiCommandIndexes extends AbstractDespiCommand{
             return pullOne(sender);
 
         return sendCount(sender);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(!canBeElevated(sender))
+            return null;
+
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("count");
+            list.add("rebuild");
+            list.add("pull-one");
+        }
+
+        return list;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -8,6 +9,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OnDespiCommandClear extends AbstractDespiCommand {
     public OnDespiCommandClear(@NotNull DespawnedItems plugin) {
@@ -31,6 +35,23 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
             return removeAllLocationsByOwner(sender, playerNameOrAny);
 
         return removeAllOwnersByLocation(sender);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(!canBeElevated(sender))
+            return null;
+
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("here");
+            list.add("total");
+            for(Player player : Bukkit.getOnlinePlayers())
+                list.add(player.getName());
+        }
+
+        return list;
     }
 
     @Override

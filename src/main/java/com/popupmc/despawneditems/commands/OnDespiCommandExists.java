@@ -2,6 +2,7 @@ package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.config.LocationEntry;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -9,6 +10,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OnDespiCommandExists extends AbstractDespiCommand {
     public OnDespiCommandExists(@NotNull DespawnedItems plugin) {
@@ -38,6 +42,27 @@ public class OnDespiCommandExists extends AbstractDespiCommand {
             return existsLocationByName((Player)sender, locationByName);
 
         return existsLocation((Player)sender, null);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(!canBeElevated(sender))
+            return null;
+
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("player");
+            list.add("any");
+            for(Player player : Bukkit.getOnlinePlayers())
+                list.add(player.getName());
+        }
+        else if(args.length == 3 && args[1].equals("player")) {
+            for(Player player : Bukkit.getOnlinePlayers())
+                list.add(player.getName());
+        }
+
+        return list;
     }
 
     @Override

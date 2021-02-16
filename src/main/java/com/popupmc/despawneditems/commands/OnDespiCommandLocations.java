@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class OnDespiCommandLocations extends AbstractDespiCommand {
     public OnDespiCommandLocations(@NotNull DespawnedItems plugin) {
@@ -41,6 +42,26 @@ public class OnDespiCommandLocations extends AbstractDespiCommand {
             return existsAnyLocationByName(sender, playerNameOrAny);
 
         return existsAllOwnersByLocation(sender);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(!canBeElevated(sender))
+            return null;
+
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("here");
+            list.add("total");
+            list.add("solo");
+            list.add("undo-solo");
+
+            for(Player player : Bukkit.getOnlinePlayers())
+                list.add(player.getName());
+        }
+
+        return list;
     }
 
     @Override

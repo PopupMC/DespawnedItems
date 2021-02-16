@@ -2,14 +2,17 @@ package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.despawn.DespawnProcess;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class OnDespiCommandDespawn extends AbstractDespiCommand {
     public OnDespiCommandDespawn(@NotNull DespawnedItems plugin) {
@@ -60,6 +63,38 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
             return clear(sender);
 
         return sendCount(sender);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(!canBeElevated(sender))
+            return null;
+
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("count");
+            list.add("create-hand");
+            list.add("create-material");
+            list.add("clear");
+        }
+
+        if(args.length == 3 && args[1].equalsIgnoreCase("create-material")) {
+            for(Material material : Material.values()) {
+                list.add(material.toString().toLowerCase());
+            }
+        }
+
+        if(args.length == 4 && args[1].equalsIgnoreCase("create-material")) {
+
+            try {
+                Material material = Material.valueOf(args[2]);
+                list.add(material.getMaxStackSize() + "");
+            }
+            catch (IllegalArgumentException ignored) {}
+        }
+
+        return list;
     }
 
     @Override
@@ -121,21 +156,36 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
         if(amount <= 0)
             amount = 1;
 
-        ItemStack item;
+        // Get name(s)
+        String[] names = material.split(",");
+        ArrayList<Material> materials = new ArrayList<>();
 
-        try {
-            item = new ItemStack(Material.valueOf(material.toUpperCase()), amount);
+        // Convert from string to Material
+        for(String name : names) {
+            // Attempt to get material, error out if invalid material
+            try {
+                Material matRes = Material.valueOf(name);
+                materials.add(matRes);
+            }
+            catch (IllegalArgumentException ex) {
+                warning("invalid material name " + name + " skipping...", sender);
+            }
         }
-        catch (IllegalArgumentException ex) {
-            error("Unable to parse material name", sender);
+
+        // If no materials names were useable then quit
+        if(materials.size() <= 0) {
+            error("No material names usable.", sender);
             return false;
         }
 
-        // Do a forced despawn
-        new DespawnProcess(item, plugin);
+        for(Material materialEl : materials) {
+            ItemStack item = new ItemStack(materialEl, amount);
+
+            // Do a forced despawn
+            new DespawnProcess(item, plugin);
+        }
 
         success("Created forced despawn", sender);
-
         return true;
     }
 }

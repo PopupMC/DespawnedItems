@@ -4,6 +4,10 @@ import com.popupmc.despawneditems.DespawnedItems;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OnDespiCommandReload extends AbstractDespiCommand {
     public OnDespiCommandReload(@NotNull DespawnedItems plugin) {
@@ -19,6 +23,11 @@ public class OnDespiCommandReload extends AbstractDespiCommand {
         success("Config has been reloaded", sender);
 
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        return null;
     }
 
     @Override

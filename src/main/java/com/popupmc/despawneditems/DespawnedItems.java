@@ -1,6 +1,7 @@
 package com.popupmc.despawneditems;
 
 import com.popupmc.despawneditems.commands.OnDespiCommand;
+import com.popupmc.despawneditems.commands.OnRecycleCommand;
 import com.popupmc.despawneditems.config.Config;
 import com.popupmc.despawneditems.despawn.DespawnEffect;
 import com.popupmc.despawneditems.despawn.DespawnIndexes;
@@ -8,11 +9,8 @@ import com.popupmc.despawneditems.despawn.DespawnProcess;
 import com.popupmc.despawneditems.events.OnItemDespawnEvent;
 import com.popupmc.despawneditems.manage.RemoveMaterials;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -28,7 +26,18 @@ public class DespawnedItems extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new OnItemDespawnEvent(this), this);
 
         // Register /despi command executor
-        Objects.requireNonNull(this.getCommand("despi")).setExecutor(new OnDespiCommand(this));
+        PluginCommand command = this.getCommand("despi");
+        if(command == null) {
+            getLogger().warning("Command /despi is null");
+            this.setEnabled(false);
+            return;
+        }
+
+        OnDespiCommand cmd = new OnDespiCommand(this);
+        command.setExecutor(cmd);
+        command.setTabCompleter(cmd);
+
+        Objects.requireNonNull(getCommand("recycle")).setExecutor(new OnRecycleCommand(this));
 
         getLogger().info("DespawnedItems is enabled");
     }
@@ -36,12 +45,6 @@ public class DespawnedItems extends JavaPlugin {
     @Override
     public void onDisable() {
         getLogger().info("DespawnedItems is disabled");
-    }
-
-    // Pass tab completion to separate class for code cleanliness
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String alias, @NotNull String[] args) {
-        return super.onTabComplete(sender, command, alias, args);
     }
 
     public Config config;

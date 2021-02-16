@@ -21,7 +21,7 @@ public class OnItemDespawnEvent implements Listener {
         ItemStack item = event.getEntity().getItemStack().clone();
 
         // Begin to process it async
-        new DespawnProcess(item, plugin);
+        new DespawnProcess(item.clone(), plugin);
     }
 
     public final DespawnedItems plugin;

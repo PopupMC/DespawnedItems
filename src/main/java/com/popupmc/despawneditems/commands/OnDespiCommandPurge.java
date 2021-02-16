@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class OnDespiCommandPurge extends AbstractDespiCommand {
@@ -48,6 +49,40 @@ public class OnDespiCommandPurge extends AbstractDespiCommand {
             return purgeOwnItem(sender);
 
         return purgeForAnother(sender, arg1, arg2, arg3);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("materials");
+            list.add("item");
+        }
+
+        if(args.length == 2 && canBeElevated(sender)) {
+            list.add("all");
+
+            for(Player player : Bukkit.getOnlinePlayers())
+                list.add(player.getName());
+        }
+
+        if(args.length == 3 && args[1].equals("materials")) {
+            for(Material material : Material.values())
+                list.add(material.toString().toLowerCase());
+        }
+
+        if(args.length == 3 && canBeElevated(sender) && !args[1].equals("item") && !args[1].equals("materials")) {
+            list.add("materials");
+            list.add("item");
+        }
+
+        if(args.length == 4  && canBeElevated(sender) && args[2].equals("materials")) {
+            for(Material material : Material.values())
+                list.add(material.toString().toLowerCase());
+        }
+
+        return list;
     }
 
     @Override

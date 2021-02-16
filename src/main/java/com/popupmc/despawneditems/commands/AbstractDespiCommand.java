@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 abstract public class AbstractDespiCommand {
 
     // Takes command action configuration and registers it
@@ -24,6 +26,7 @@ abstract public class AbstractDespiCommand {
 
     // Code that runs the command
     abstract public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args);
+    abstract public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args);
     abstract public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args);
     abstract public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args);
 

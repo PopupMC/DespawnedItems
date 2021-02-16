@@ -8,8 +8,10 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class OnDespiCommandEffects extends AbstractDespiCommand {
     public OnDespiCommandEffects(@NotNull DespawnedItems plugin) {
@@ -35,6 +37,22 @@ public class OnDespiCommandEffects extends AbstractDespiCommand {
             return clear(sender);
 
         return sendCount(sender);
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        if(!canBeElevated(sender))
+            return null;
+
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("count");
+            list.add("create");
+            list.add("clear");
+        }
+
+        return list;
     }
 
     @Override

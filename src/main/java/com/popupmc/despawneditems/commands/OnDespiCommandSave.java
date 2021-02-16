@@ -4,6 +4,9 @@ import com.popupmc.despawneditems.DespawnedItems;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 public class OnDespiCommandSave extends AbstractDespiCommand {
     public OnDespiCommandSave(@NotNull DespawnedItems plugin) {
@@ -19,6 +22,11 @@ public class OnDespiCommandSave extends AbstractDespiCommand {
         success("Locations have been saved", sender);
 
         return true;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
+        return null;
     }
 
     @Override

@@ -13,6 +13,9 @@ public class FileConfig {
     }
 
     public void load() {
+        // Ensure main config is saved
+        plugin.saveDefaultConfig();
+
         // Load main config file
         FileConfiguration config = plugin.getConfig();
 
