@@ -9,6 +9,7 @@ import org.bukkit.command.TabCompleter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,36 +100,36 @@ public class OnDespiCommand implements CommandExecutor, TabCompleter {
                                                 @NotNull String[] args) {
 
         // Register despi commands one time
-//        if(despiCommands.size() <= 0)
-//            registerDespiCommands(plugin);
-//
-//        // Check for permission and block if no permission
-//        if(!sender.hasPermission("despi.use"))
-//            return null;
-//
-//        // Check for argument length, has to have at least 1 arg
-//        // Block with error if not
-//        if(args.length <= 1) {
-//            ArrayList<String> list = new ArrayList<>();
-//
-//            for(Map.Entry<String, AbstractDespiCommand> commandEntry : despiCommands.entrySet()) {
-//                if(commandEntry.getValue().showDescription(sender, args))
-//                    list.add(commandEntry.getKey());
-//            }
-//
-//            return list;
-//        }
-//        else {
-//            AbstractDespiCommand despiCommand = despiCommands.getOrDefault(args[0].toLowerCase(), null);
-//            if(despiCommand != null) {
-//                List<String> list = despiCommand.onTabComplete(sender, args);
-//                if(list == null)
-//                    return null;
-//
-//                if(args.length == 2)
-//                    list.add(0, "help");
-//            }
-//        }
+        if(despiCommands.size() <= 0)
+            registerDespiCommands(plugin);
+
+        // Check for permission and block if no permission
+        if(!sender.hasPermission("despi.use"))
+            return null;
+
+        // Check for argument length, has to have at least 1 arg
+        // Block with error if not
+        if(args.length == 0) {
+            ArrayList<String> list = new ArrayList<>();
+
+            for(Map.Entry<String, AbstractDespiCommand> commandEntry : despiCommands.entrySet()) {
+                if(commandEntry.getValue().showDescription(sender, args))
+                    list.add(commandEntry.getKey());
+            }
+
+            return list;
+        }
+        else {
+            AbstractDespiCommand despiCommand = despiCommands.getOrDefault(args[0].toLowerCase(), null);
+            if(despiCommand != null) {
+                List<String> list = despiCommand.onTabComplete(sender, args);
+                if(list == null)
+                    return null;
+
+                if(args.length == 1)
+                    list.add(0, "help");
+            }
+        }
 
         return null;
     }

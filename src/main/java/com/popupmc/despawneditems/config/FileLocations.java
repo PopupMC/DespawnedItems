@@ -54,11 +54,9 @@ public class FileLocations {
             UUID owner;
 
             try {
-                plugin.getLogger().info("Attempting to convert file name to UUID: " + uuidStr);
                 owner = UUID.fromString(uuidStr);
             }
             catch (IllegalArgumentException ex) {
-                plugin.getLogger().info("Failed");
                 continue;
             }
 
@@ -68,6 +66,32 @@ public class FileLocations {
         // Rebuild indexes
         if(plugin.despawnIndexes != null)
             plugin.despawnIndexes.rebuildIndexes();
+    }
+
+    // I dont know of any other way to do this and right now I just want to get the plugin released
+    // I'll brainstorm a better way later
+    public void clearFiles() {
+        File folder = new File(getplayerDataDir().toString());
+        File[] listOfFiles = folder.listFiles();
+
+        for(File file : listOfFiles) {
+            if(!file.getName().endsWith(".yml"))
+                continue;
+
+            String uuidStr = file.getName().substring(0, file.getName().length() - 4);
+
+            try {
+                UUID ignored = UUID.fromString(uuidStr);
+            }
+            catch (IllegalArgumentException ex) {
+                continue;
+            }
+
+            try {
+                boolean ignored = file.delete();
+            }
+            catch (SecurityException ignored) {}
+        }
     }
 
     public void loadFile(@NotNull UUID owner, @NotNull File file) {
@@ -122,6 +146,10 @@ public class FileLocations {
         if (!ensurePlayerDataDirExists())
             return;
 
+        // Delete all files first, this is a bad way of doing it but at the moment im just trying to get the plugin
+        // shipped
+        clearFiles();
+
         // Split location entries up into groups by owner
         Hashtable<UUID, ArrayList<LocationEntry>> splitFiles = new Hashtable<>();
 
@@ -140,15 +168,29 @@ public class FileLocations {
 
         for(Map.Entry<UUID, ArrayList<LocationEntry>> entry : splitFiles.entrySet()) {
             // Get file to user data
-            Path path = Paths.get(getplayerDataDir().toString(), entry.getKey().toString() + ".yml");
-            File file = new File(path.toString());
+            File file = getFile(entry.getKey());
 
             // Save it
             saveFile(file, entry.getValue());
         }
     }
 
+    public Path getFilePath(UUID uuid) {
+        return Paths.get(getplayerDataDir().toString(), uuid.toString() + ".yml");
+    }
+
+    public File getFile(UUID uuid) {
+        return new File(getFilePath(uuid).toString());
+    }
+
     public void saveFile(@NotNull File file, @NotNull ArrayList<LocationEntry> splitLocationEntries) {
+
+        // Try to delete it, I don't care the result, just don't crash my plugin
+//        try {
+//            boolean ignored = file.delete();
+//        }
+//        catch (SecurityException ignored) {}
+
         // Create new empty list
         ArrayList<String> flattenedLocationEntries = new ArrayList<>();
 
@@ -270,6 +312,7 @@ public class FileLocations {
     public int removeAll() {
         int count = locationEntries.size();
         locationEntries.clear();
+        save();
         return count;
     }
 

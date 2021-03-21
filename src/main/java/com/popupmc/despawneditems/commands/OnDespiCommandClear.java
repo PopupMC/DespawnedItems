@@ -18,21 +18,23 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
         super(plugin, "clear", "Clears all of your despawn locations");
     }
 
-    // despi [clear, <player>] - All locations owned by a player
+    // despi [clear, <player>] - All locations owned by a player anywhere
     // despi [clear, here] - All players owned by this location
-    // despi [clear, total] - All players owned by this location
-    // despi [clear] - All of your locations
+    // despi [clear, all] - All players owned by this location
+    // despi [clear, mine] - All of your locations
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
         // Get args to name
-        String playerNameOrAny = getArg(1, args);
+        String arg1 = getArg(1, args);
 
-        if(playerNameOrAny == null)
-            return removeAllLocationsByOwner(sender, null);
-        else if(playerNameOrAny.equalsIgnoreCase("total"))
+        if(arg1 == null)
+            return false;
+        else if(arg1.equalsIgnoreCase("all"))
             return removeAllLocations(sender);
-        else if(!playerNameOrAny.equalsIgnoreCase("here"))
-            return removeAllLocationsByOwner(sender, playerNameOrAny);
+        else if(arg1.equalsIgnoreCase("mine"))
+            return removeAllLocationsByOwner(sender, null);
+        else if(!arg1.equalsIgnoreCase("here"))
+            return removeAllLocationsByOwner(sender, arg1);
 
         return removeAllOwnersByLocation(sender);
     }
@@ -44,9 +46,9 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
 
         ArrayList<String> list = new ArrayList<>();
 
-        if(args.length == 2) {
+        if(args.length == 1) {
             list.add("here");
-            list.add("total");
+            list.add("all");
             for(Player player : Bukkit.getOnlinePlayers())
                 list.add(player.getName());
         }
@@ -57,10 +59,10 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi clear [<player>|here|total]");
+            sender.sendMessage(ChatColor.GRAY + "/despi clear [mine||here|total|<player>]");
         }
         else {
-            sender.sendMessage(ChatColor.GRAY + "/despi clear");
+            sender.sendMessage(ChatColor.GRAY + "/despi clear mine");
         }
     }
 
