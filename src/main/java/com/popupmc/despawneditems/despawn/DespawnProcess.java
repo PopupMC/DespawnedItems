@@ -34,7 +34,10 @@ public class DespawnProcess {
             despawnIntos.add(new DespawnIntoCooker(plugin));
 
             // Then place in the air
-            despawnIntos.add(new DespawnIntoAir(plugin));
+            despawnIntos.add(new DespawnBlockIntoAir(plugin));
+
+            // Then place in Entity
+            despawnIntos.add(new DespawnItemIntoEntity(plugin));
 
             // Then place into storage
             despawnIntos.add(new DespawnIntoStorage(plugin));
@@ -82,8 +85,8 @@ public class DespawnProcess {
         // If no more loops left then stop here and self-destroy
         // to prevent infinite loops
         if(loopsLeft <= 0) {
-            plugin.getLogger().warning("WARNING: Despawn ended without being able to find a location");
-            plugin.getLogger().warning("WARNING: Is everything full?");
+//            plugin.getLogger().warning("WARNING: Despawn ended without being able to find a location");
+//            plugin.getLogger().warning("WARNING: Is everything full?");
             selfDestroy();
             return;
         }
@@ -133,6 +136,10 @@ public class DespawnProcess {
                 selfDestroy();
                 return;
             }
+
+            // If nothing was transferred in at all, try another into
+            if(result == DespawnIntoResult.NONE)
+                continue;
 
             // Onto the next location
             break;

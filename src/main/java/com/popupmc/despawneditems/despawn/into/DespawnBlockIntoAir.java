@@ -3,17 +3,18 @@ package com.popupmc.despawneditems.despawn.into;
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.despawn.DespawnProcess;
 import net.kyori.adventure.text.Component;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.*;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.data.type.NoteBlock;
+import org.bukkit.entity.Entity;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.List;
 
 // It's not possible for a #!!!@@!@##@@@ huyman on earth to do this
@@ -28,15 +29,19 @@ import java.util.List;
 // This guy explain about 15% of what I'd have to write, just a tiny fraction
 // https://www.spigotmc.org/threads/copying-saving-block-information-to-be-placed-later.157015/
 // I agree with him, the level of absolute absurdity is unfathomable
-public class DespawnIntoAir extends AbstractDespawnInto {
-    public DespawnIntoAir(@NotNull DespawnedItems plugin) {
+public class DespawnBlockIntoAir extends AbstractDespawnInto {
+    public DespawnBlockIntoAir(@NotNull DespawnedItems plugin) {
         super(plugin);
     }
 
     @Override
     public boolean doesApply(@NotNull Block targetBlock) {
+
         Material targetMaterial = targetBlock.getType();
-        return targetMaterial.isAir();
+        Collection<Entity> entities =
+                targetBlock.getLocation().toCenterLocation().getNearbyEntities(.5, .5, .5);
+
+        return targetMaterial.isAir() && (entities.size() == 0);
     }
 
     @Override

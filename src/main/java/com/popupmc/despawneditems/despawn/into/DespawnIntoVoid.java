@@ -14,36 +14,41 @@ public class DespawnIntoVoid extends AbstractDespawnInto {
 
     @Override
     public boolean doesApply(@NotNull Block targetBlock) {
-        Material targetMaterial = targetBlock.getType();
-
-        return targetMaterial == Material.COMMAND_BLOCK ||
-                targetMaterial == Material.COMMAND_BLOCK_MINECART ||
-                targetMaterial == Material.CHAIN_COMMAND_BLOCK ||
-                targetMaterial == Material.REPEATING_COMMAND_BLOCK ||
-                targetMaterial == Material.DEBUG_STICK ||
-                targetMaterial == Material.JIGSAW ||
-                targetMaterial == Material.STRUCTURE_BLOCK ||
-                targetMaterial == Material.STRUCTURE_VOID ||
-                targetMaterial == Material.NETHERITE_AXE ||
-                targetMaterial == Material.NETHERITE_BLOCK ||
-                targetMaterial == Material.NETHERITE_BOOTS ||
-                targetMaterial == Material.NETHERITE_CHESTPLATE ||
-                targetMaterial == Material.NETHERITE_HELMET ||
-                targetMaterial == Material.NETHERITE_HOE ||
-                targetMaterial == Material.NETHERITE_INGOT ||
-                targetMaterial == Material.NETHERITE_LEGGINGS ||
-                targetMaterial == Material.NETHERITE_PICKAXE ||
-                targetMaterial == Material.NETHERITE_SCRAP ||
-                targetMaterial == Material.NETHERITE_SHOVEL ||
-                targetMaterial == Material.NETHERITE_SWORD ||
-                targetMaterial == Material.ANCIENT_DEBRIS;
+        return true;
     }
 
     @Override
     public DespawnIntoResult despawnInto(@NotNull DespawnProcess process, @NotNull Block targetBlock) {
-        process.item.setAmount(0);
-        process.item.setType(Material.AIR);
-        return DespawnIntoResult.CONTRABAND;
+
+        Material itemType = process.item.getType();
+
+        if(itemType == Material.COMMAND_BLOCK ||
+                itemType == Material.COMMAND_BLOCK_MINECART ||
+                itemType == Material.CHAIN_COMMAND_BLOCK ||
+                itemType == Material.REPEATING_COMMAND_BLOCK ||
+                itemType == Material.DEBUG_STICK ||
+                itemType == Material.JIGSAW ||
+                itemType == Material.STRUCTURE_BLOCK ||
+                itemType == Material.STRUCTURE_VOID ||
+                itemType == Material.NETHERITE_AXE ||
+                itemType == Material.NETHERITE_BLOCK ||
+                itemType == Material.NETHERITE_BOOTS ||
+                itemType == Material.NETHERITE_CHESTPLATE ||
+                itemType == Material.NETHERITE_HELMET ||
+                itemType == Material.NETHERITE_HOE ||
+                itemType == Material.NETHERITE_INGOT ||
+                itemType == Material.NETHERITE_LEGGINGS ||
+                itemType == Material.NETHERITE_PICKAXE ||
+                itemType == Material.NETHERITE_SCRAP ||
+                itemType == Material.NETHERITE_SHOVEL ||
+                itemType == Material.NETHERITE_SWORD ||
+                itemType == Material.ANCIENT_DEBRIS) {
+            process.item.setAmount(0);
+            process.item.setType(Material.AIR);
+            return DespawnIntoResult.CONTRABAND;
+        }
+
+        return DespawnIntoResult.NONE;
     }
 
     @Override
