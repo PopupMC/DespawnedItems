@@ -18,6 +18,8 @@ public class DespawnedItems extends JavaPlugin {
     @Override
     public void onEnable() {
 
+        BlacklistedItems.setup();
+
         // Create classes
         this.config = new Config(this);
         this.despawnIndexes = new DespawnIndexes(this);

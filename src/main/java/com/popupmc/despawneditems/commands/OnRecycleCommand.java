@@ -1,9 +1,9 @@
 package com.popupmc.despawneditems.commands;
 
+import com.popupmc.despawneditems.BlacklistedItems;
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.despawn.DespawnProcess;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,6 +11,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Objective;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Random;
 
 public class OnRecycleCommand implements CommandExecutor {
     public OnRecycleCommand(DespawnedItems plugin) {
@@ -43,9 +45,7 @@ public class OnRecycleCommand implements CommandExecutor {
         player.sendMessage(ChatColor.GREEN + "Done!");
 
         // Increase score by 1 for each item count
-        for(int i = 0; i < item.getAmount(); i++) {
-            increaseScore(player);
-        }
+        increaseScore(player);
 
         return true;
     }
@@ -66,6 +66,7 @@ public class OnRecycleCommand implements CommandExecutor {
 
         // If it's less than a full stack then increment and stop here
         if(recycleCountPart < 64) {
+            player.sendMessage(ChatColor.GRAY + "" + (64 - recycleCountPart) + " left before given random item...");
             recycleCountPartObj.getScore(player.getName()).setScore(recycleCountPart);
             return;
         }
@@ -110,7 +111,10 @@ public class OnRecycleCommand implements CommandExecutor {
             return;
 
         // Pay the player
-        ItemStack itemStack = new ItemStack(Material.GOLD_NUGGET);
+        ItemStack itemStack = new ItemStack(
+                BlacklistedItems.itemList.get(random.nextInt(BlacklistedItems.itemList.size()))
+        );
+
         itemStack.setAmount(difference);
         player.getWorld().dropItem(player.getLocation(), itemStack);
 
@@ -119,4 +123,5 @@ public class OnRecycleCommand implements CommandExecutor {
     }
 
     public final DespawnedItems plugin;
+    public final Random random = new Random();
 }
