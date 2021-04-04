@@ -42,12 +42,22 @@ public class OnRecycleCommand implements CommandExecutor {
 
         player.sendMessage(ChatColor.GREEN + "Done!");
 
+        // Increase score by 1 for each item count
+        for(int i = 0; i < item.getAmount(); i++) {
+            increaseScore(player);
+        }
+
+        return true;
+    }
+
+    public void increaseScore(Player player) {
+
         // Get partial objective
         // A partial is a partial stack of 64, not a full stack
         Objective recycleCountPartObj = player.getScoreboard().getObjective("recycleCountPart");
         if(recycleCountPartObj == null) {
             plugin.getLogger().warning("Objective recycleCountPartObj is null");
-            return true;
+            return;
         }
 
         int recycleCountPart = recycleCountPartObj.getScore(player.getName()).getScore();
@@ -57,7 +67,7 @@ public class OnRecycleCommand implements CommandExecutor {
         // If it's less than a full stack then increment and stop here
         if(recycleCountPart < 64) {
             recycleCountPartObj.getScore(player.getName()).setScore(recycleCountPart);
-            return true;
+            return;
         }
         // Otherwise reset value and keep going
         else {
@@ -69,7 +79,7 @@ public class OnRecycleCommand implements CommandExecutor {
         Objective recycleCountObj = player.getScoreboard().getObjective("recycleCount");
         if(recycleCountObj == null) {
             plugin.getLogger().warning("Objective recycleCountObj is null");
-            return true;
+            return;
         }
 
         int recycleCount = recycleCountObj.getScore(player.getName()).getScore();
@@ -82,7 +92,7 @@ public class OnRecycleCommand implements CommandExecutor {
         Objective recycleCountPaidObj = player.getScoreboard().getObjective("recycleCountPaid");
         if(recycleCountPaidObj == null) {
             plugin.getLogger().warning("Objective recycleCountPaidObj is null");
-            return true;
+            return;
         }
 
         int recycleCountPaid = recycleCountPaidObj.getScore(player.getName()).getScore();
@@ -90,14 +100,14 @@ public class OnRecycleCommand implements CommandExecutor {
         // Paid should always be less than or equal to unpaid
         // If greater than then stop here
         if(recycleCountPaid > recycleCount)
-            return true;
+            return;
 
         // Get difference between paid and unpaid
         int difference = recycleCount - recycleCountPaid;
 
         // If not enough difference then stop here
         if(difference <= 0)
-            return true;
+            return;
 
         // Pay the player
         ItemStack itemStack = new ItemStack(Material.GOLD_NUGGET);
@@ -106,8 +116,6 @@ public class OnRecycleCommand implements CommandExecutor {
 
         // Update score
         recycleCountPaidObj.getScore(player.getName()).setScore(recycleCount);
-
-        return true;
     }
 
     public final DespawnedItems plugin;

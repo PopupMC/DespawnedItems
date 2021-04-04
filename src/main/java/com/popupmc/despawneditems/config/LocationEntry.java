@@ -25,11 +25,6 @@ public class LocationEntry {
 
     public @NotNull String toString() {
 
-        plugin.getLogger().info(location.getBlockX() + ";" +
-                location.getBlockY() + ";" +
-                location.getBlockZ() + ";" +
-                location.getWorld().getName());
-
         return location.getBlockX() + ";" +
                 location.getBlockY() + ";" +
                 location.getBlockZ() + ";" +
