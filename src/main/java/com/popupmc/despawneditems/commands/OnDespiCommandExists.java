@@ -16,48 +16,95 @@ import java.util.List;
 
 public class OnDespiCommandExists extends AbstractDespiCommand {
     public OnDespiCommandExists(@NotNull DespawnedItems plugin) {
-        super(plugin, "exists", "Checks to see if the location your pointing to exists for despawning");
+        super(plugin, "exists", "Checks despawn location and ownership information");
     }
 
-    // despi [exists, player, <player>] - Checks for existence the first location owned by the player
-    // despi [exists, <player|any>] - Checks for existence a location owned by a player, or the first of anybody
-    // despi [exists] - Checks for existence your location
+    // despi [exists, [here|anywhere], owned-by, <player>] - Does this player own this location or location in general
+    // despi [exists, [here], owned-by-anyone>] - Does anyone own this location
+    // despi [exists, [here|anywhere], owned-by-me] - Do I own this location or location in general
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
-        // Get args to name
-        String anyLocationByName = getArg(2, args);
-        String locationByName = getArg(1, args);
 
-        // If 3rd arg, do any location by name
-        if(anyLocationByName != null)
-            return existsAnyLocationByName(sender, anyLocationByName);
+        // Get arguments
+        String hereOrAnywhere = getArg(1, args);
+        String ownedBy = getArg(2, args);
+        String playerName = getArg(3, args);
+
+        // Get here or anywhere
+        if(hereOrAnywhere == null ||
+                (!hereOrAnywhere.equalsIgnoreCase("here") &&
+                !hereOrAnywhere.equalsIgnoreCase("anywhere")))
+            return false;
+
+        // Is this
+        // /despi exists anywhere owned-by <player>
+        if(hereOrAnywhere.equalsIgnoreCase("anywhere") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by") &&
+                playerName != null)
+            return existsAnyLocationByName(sender, playerName);
 
         // Here after we need the sender to be a player
-        Player player = isPlayer(sender, "Only players can remove locations");
+        Player player = isPlayer(sender, "Only players can check locations");
         if(player == null)
             return false;
 
-        // If 2nd arg, exists by name, otherwise, exists as self
-        if(locationByName != null)
-            return existsLocationByName((Player)sender, locationByName);
+        // Is this
+        // /despi exists anywhere owned-by-me
+        if(hereOrAnywhere.equalsIgnoreCase("anywhere") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by-me") &&
+                playerName == null)
+            return existsAnyLocationByName(player, player);
 
-        return existsLocation((Player)sender, null);
+        // Is this
+        // /despi exists here owned-by <player>
+        if(hereOrAnywhere.equalsIgnoreCase("here") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by") &&
+                playerName != null)
+            return existsThisLocation(player, playerName);
+
+        // Is this
+        // /despi exists here owned-by-anyone
+        if(hereOrAnywhere.equalsIgnoreCase("here") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by-anyone") &&
+                playerName == null)
+            return existsThisLocation(player, null, true);
+
+        // Is this
+        // /despi exists here owned-by-me
+        if(hereOrAnywhere.equalsIgnoreCase("here") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by-me") &&
+                playerName == null)
+            return existsThisLocation(player, null, false);
+
+        return false;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
-        if(!canBeElevated(sender))
-            return null;
 
+        boolean canElevate = canBeElevated(sender);
         ArrayList<String> list = new ArrayList<>();
 
         if(args.length == 2) {
-            list.add("player");
-            list.add("any");
-            for(Player player : Bukkit.getOnlinePlayers())
-                list.add(player.getName());
+            list.add("here");
+            list.add("anywhere");
         }
-        else if(args.length == 3 && args[1].equals("player")) {
+        else if(args.length == 3) {
+
+            if(canElevate)
+                list.add("owned-by");
+
+            if(!args[1].equalsIgnoreCase("anywhere") && canElevate)
+                list.add("owned-by-anyone");
+
+            list.add("owned-by-me");
+        }
+        else if(args.length == 4 && args[2].equalsIgnoreCase("owned-by") && canElevate) {
             for(Player player : Bukkit.getOnlinePlayers())
                 list.add(player.getName());
         }
@@ -68,10 +115,12 @@ public class OnDespiCommandExists extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi exists player <player>|<player|any>");
+            sender.sendMessage(ChatColor.GRAY + "/despi exists [here|anywhere] owned-by <player> (Does this player own this location or location in general)");
+            sender.sendMessage(ChatColor.GRAY + "/despi exists [here] owned-by-anyone (Does any player own this location)");
+            sender.sendMessage(ChatColor.GRAY + "/despi exists [here|anywhere] owned-by-me (Do I own this location or location in general)");
         }
         else {
-            sender.sendMessage(ChatColor.GRAY + "/despi exists");
+            sender.sendMessage(ChatColor.GRAY + "/despi exists [here|anywhere] owned-by-me (Do I own this location or location in general)");
         }
     }
 
@@ -86,35 +135,36 @@ public class OnDespiCommandExists extends AbstractDespiCommand {
 
         OfflinePlayer player = getPlayer(ownerName);
 
-        LocationEntry success = plugin.config.fileLocations.exists(player.getUniqueId());
+        return existsAnyLocationByName(sender, player);
+    }
+
+    public boolean existsAnyLocationByName(@NotNull CommandSender sender, @NotNull OfflinePlayer ownerName) {
+        LocationEntry success = plugin.config.fileLocations.exists(ownerName.getUniqueId());
 
         if(success != null) {
-            success("A location was found by " + ownerName, sender);
+            success("A location was found!", sender);
             sender.sendMessage(ChatColor.GOLD + success.toString());
         }
         else
-            warning(ownerName + " doesn't own any locations!", sender);
+            warning("No location was found", sender);
 
         return true;
     }
 
-    public boolean existsLocationByName(@NotNull Player sender, @NotNull String ownerName) {
+    public boolean existsThisLocation(@NotNull Player sender, @NotNull String ownerName) {
         if(!canBeElevated("You don't have permission to check for existence for someone elses location", sender))
             return false;
 
-        if(ownerName.equalsIgnoreCase("any"))
-            return existsLocation(sender, null, true);
-
         OfflinePlayer player = getPlayer(ownerName);
 
-        return existsLocation(sender, player);
+        return existsThisLocation(sender, player);
     }
 
-    public boolean existsLocation(@NotNull Player sender, @Nullable OfflinePlayer owner) {
-        return existsLocation(sender, owner, false);
+    public boolean existsThisLocation(@NotNull Player sender, @Nullable OfflinePlayer owner) {
+        return existsThisLocation(sender, owner, false);
     }
 
-    public boolean existsLocation(@NotNull Player sender, @Nullable OfflinePlayer owner, boolean skipOwner) {
+    public boolean existsThisLocation(@NotNull Player sender, @Nullable OfflinePlayer owner, boolean anyOwner) {
         if(owner == null)
             owner = sender;
 
@@ -124,7 +174,7 @@ public class OnDespiCommandExists extends AbstractDespiCommand {
 
         LocationEntry success;
 
-        if(skipOwner)
+        if(anyOwner)
             success = plugin.config.fileLocations.exists(location);
         else
             success = plugin.config.fileLocations.exists(location, owner.getUniqueId());

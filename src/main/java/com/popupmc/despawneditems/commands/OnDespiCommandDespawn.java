@@ -2,7 +2,6 @@ package com.popupmc.despawneditems.commands;
 
 import com.popupmc.despawneditems.DespawnedItems;
 import com.popupmc.despawneditems.despawn.DespawnProcess;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -19,12 +18,11 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
         super(plugin, "despawn", "Manages despawning often for testing");
     }
 
-    // despi [despawn, count]
-    // despi [despawn, create-hand]
+    // despi [despawn, count-ongoing]
+    // despi [despawn, create-from-hand]
     // despi [despawn, create-material, <material>]
     // despi [despawn, create-material, <material>, <amount>]
-    // despi [despawn, clear]
-    // despi [despawn]
+    // despi [despawn, clear-ongoing]
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
         if(!canBeElevated(sender))
@@ -53,16 +51,18 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
             }
         }
 
-        if(option.equalsIgnoreCase("create-hand"))
+        if(option.equalsIgnoreCase("create-from-hand"))
             return createFromHand(sender);
         else if(option.equalsIgnoreCase("create-material")) {
             assert material != null;
             return createFromMaterial(sender, material, amount);
         }
-        else if(option.equalsIgnoreCase("clear"))
+        else if(option.equalsIgnoreCase("clear-ongoing"))
             return clear(sender);
+        else if(option.equalsIgnoreCase("count-ongoing"))
+            return sendCount(sender);
 
-        return sendCount(sender);
+        return false;
     }
 
     @Override
@@ -73,10 +73,10 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
         ArrayList<String> list = new ArrayList<>();
 
         if(args.length == 2) {
-            list.add("count");
-            list.add("create-hand");
+            list.add("count-ongoing");
+            list.add("create-from-hand");
             list.add("create-material");
-            list.add("clear");
+            list.add("clear-ongoing");
         }
 
         if(args.length == 3 && args[1].equalsIgnoreCase("create-material")) {
@@ -88,7 +88,7 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
         if(args.length == 4 && args[1].equalsIgnoreCase("create-material")) {
 
             try {
-                Material material = Material.valueOf(args[2]);
+                Material material = Material.valueOf(args[2].toUpperCase());
                 list.add(material.getMaxStackSize() + "");
             }
             catch (IllegalArgumentException ignored) {}
@@ -100,7 +100,10 @@ public class OnDespiCommandDespawn extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi despawn count|create-hand|create material <materials> <amt>|clear");
+            sender.sendMessage(ChatColor.GRAY + "/despi despawn count-ongoing (Count on-going despawns)");
+            sender.sendMessage(ChatColor.GRAY + "/despi despawn create-from-hand (Make a despawn from item in your hand)");
+            sender.sendMessage(ChatColor.GRAY + "/despi despawn create-material <materials> <amt> (Make a despawn from named material)");
+            sender.sendMessage(ChatColor.GRAY + "/despi despawn clear-ongoing (Stop ongoing processes)");
         }
         else {
             sender.sendMessage(ChatColor.GRAY + "You don't have access to this command");

@@ -19,7 +19,11 @@ public class DespawnIntoVoid extends AbstractDespawnInto {
         return targetMaterial == Material.COMMAND_BLOCK ||
                 targetMaterial == Material.COMMAND_BLOCK_MINECART ||
                 targetMaterial == Material.CHAIN_COMMAND_BLOCK ||
-                targetMaterial == Material.REPEATING_COMMAND_BLOCK;
+                targetMaterial == Material.REPEATING_COMMAND_BLOCK ||
+                targetMaterial == Material.DEBUG_STICK ||
+                targetMaterial == Material.JIGSAW ||
+                targetMaterial == Material.STRUCTURE_BLOCK ||
+                targetMaterial == Material.STRUCTURE_VOID;
     }
 
     @Override

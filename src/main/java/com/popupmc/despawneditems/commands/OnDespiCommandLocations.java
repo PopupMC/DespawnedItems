@@ -19,44 +19,55 @@ public class OnDespiCommandLocations extends AbstractDespiCommand {
         super(plugin, "locations", "Obtains all of your locations.");
     }
 
-    // despi [locations, <player>] - All locations owned by a player
+    // despi [locations, player, <player>] - All locations owned by a player
     // despi [locations, here] - All players owned by this location
-    // despi [locations, total] - Total server locations
-    // despi [locations, solo] - Total server locations
-    // despi [locations, undo-solo] - Total server locations
-    // despi [locations] - All of your locations
+    // despi [locations, count] - Count all server locations
+    // despi [locations, solo-mode] - Make this location the only location on the server
+    // despi [locations, normal-mode] - Restore normal locations
+    // despi [locations, mine] - All of your locations
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
         // Get args to name
-        String playerNameOrAny = getArg(1, args);
+        String option = getArg(1, args);
+        String playerName = getArg(2, args);
 
-        if(playerNameOrAny == null)
-            return existsAnyLocationByName(sender, null);
-        else if(playerNameOrAny.equalsIgnoreCase("total"))
+        if(option == null)
+            return false;
+        else if(option.equalsIgnoreCase("player"))
+            return existsAnyLocationByName(sender, playerName);
+        else if(option.equalsIgnoreCase("count"))
             return totalLocationCount(sender);
-        else if(playerNameOrAny.equalsIgnoreCase("solo"))
+        else if(option.equalsIgnoreCase("solo-mode"))
             return soloLocation(sender);
-        else if(playerNameOrAny.equalsIgnoreCase("undo-solo"))
+        else if(option.equalsIgnoreCase("normal-mode"))
             return undoSolo(sender);
-        else if(!playerNameOrAny.equalsIgnoreCase("here"))
-            return existsAnyLocationByName(sender, playerNameOrAny);
+        else if(option.equalsIgnoreCase("here"))
+            return existsAllOwnersByLocation(sender);
+        else if(option.equalsIgnoreCase("mine"))
+            return existsAnyLocationByName(sender, null);
 
-        return existsAllOwnersByLocation(sender);
+        return false;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
-        if(!canBeElevated(sender))
-            return null;
 
+        boolean isElevated = canBeElevated(sender);
         ArrayList<String> list = new ArrayList<>();
 
         if(args.length == 2) {
-            list.add("here");
-            list.add("total");
-            list.add("solo");
-            list.add("undo-solo");
+            if(isElevated) {
+                list.add("player");
+                list.add("here");
+                list.add("count");
+                list.add("solo-mode");
+                list.add("normal-mode");
+            }
 
+            list.add("mine");
+        }
+
+        if(args.length == 3 && isElevated && args[1].equalsIgnoreCase("player")) {
             for(Player player : Bukkit.getOnlinePlayers())
                 list.add(player.getName());
         }
@@ -67,10 +78,15 @@ public class OnDespiCommandLocations extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi locations [<player>|here|total|solo|undo-solo]");
+            sender.sendMessage(ChatColor.GRAY + "/despi locations player <player> (All locations by a player)");
+            sender.sendMessage(ChatColor.GRAY + "/despi locations count (All locations by everyone)");
+            sender.sendMessage(ChatColor.GRAY + "/despi locations solo-mode (Singlular despawn target)");
+            sender.sendMessage(ChatColor.GRAY + "/despi locations normal-mode (Normal despawn targets)");
+            sender.sendMessage(ChatColor.GRAY + "/despi locations here (All owners by this location)");
+            sender.sendMessage(ChatColor.GRAY + "/despi locations mine (All my locations)");
         }
         else {
-            sender.sendMessage(ChatColor.GRAY + "/despi locations");
+            sender.sendMessage(ChatColor.GRAY + "/despi locations mine (All my locations)");
         }
     }
 
@@ -106,12 +122,12 @@ public class OnDespiCommandLocations extends AbstractDespiCommand {
         plugin.config.fileLocations.locationEntries.add(new LocationEntry(location, player.getUniqueId(), plugin));
         plugin.despawnIndexes.rebuildIndexes();
 
-        success("Solo'd this location, /despi undo-solo to restore", sender);
+        success("Solo'd this location, /despi normal-mode to restore", sender);
         return true;
     }
 
     public boolean undoSolo(@NotNull CommandSender sender) {
-        if(!canBeElevated("You don't have permission to undo a solo", sender))
+        if(!canBeElevated("You don't have permission to undo a solo-mode", sender))
             return false;
 
         // Add backups back-in and save/load to clear duplicates

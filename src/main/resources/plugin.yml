@@ -3,7 +3,7 @@ version: 1.0
 main: com.popupmc.despawneditems.DespawnedItems
 description: Despawned Items
 author: junebug12851
-api-version: 1.15
+api-version: 1.16
 
 commands:
   despi:

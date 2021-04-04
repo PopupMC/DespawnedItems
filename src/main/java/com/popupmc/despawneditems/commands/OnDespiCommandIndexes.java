@@ -19,7 +19,6 @@ public class OnDespiCommandIndexes extends AbstractDespiCommand{
     // despi [indexes, count]
     // despi [indexes, rebuild]
     // despi [indexes, pull-one]
-    // despi [indexes]
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
         if(!canBeElevated(sender))
@@ -28,13 +27,15 @@ public class OnDespiCommandIndexes extends AbstractDespiCommand{
         String option = getArg(1, args);
 
         if(option == null)
-            return sendCount(sender);
+            return false;
         else if(option.equalsIgnoreCase("rebuild"))
             return rebuild(sender);
         else if(option.equalsIgnoreCase("pull-one"))
             return pullOne(sender);
+        else if(option.equalsIgnoreCase("count"))
+            return sendCount(sender);
 
-        return sendCount(sender);
+        return false;
     }
 
     @Override
@@ -56,7 +57,9 @@ public class OnDespiCommandIndexes extends AbstractDespiCommand{
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi indexes count|rebuild|pull-one");
+            sender.sendMessage(ChatColor.GRAY + "/despi indexes count (Count of all indexes)");
+            sender.sendMessage(ChatColor.GRAY + "/despi indexes rebuild (Rebuild all indexes)");
+            sender.sendMessage(ChatColor.GRAY + "/despi indexes pull-one (Pull an index from the list)");
         }
         else {
             sender.sendMessage(ChatColor.GRAY + "You don't have access to this command");
@@ -83,6 +86,11 @@ public class OnDespiCommandIndexes extends AbstractDespiCommand{
     }
 
     public boolean pullOne(@NotNull CommandSender sender) {
+
+        if(plugin.config.fileLocations.locationEntries.size() == 0) {
+            warning("No despawn locations exist anywhere by anyone", sender);
+        }
+
         LocationEntry locationEntry = plugin.despawnIndexes.randomChestCoord();
 
         success("Pulled " + locationEntry.toString() + " owned by " +

@@ -45,7 +45,7 @@ abstract public class AbstractDespiCommand {
         Block block = sender.getTargetBlock(5);
 
         // Make sure it's within 5 blocks and obtainable, if not stop here with error
-        if(block == null) {
+        if(block == null || block.getType().isAir()) {
             error("Unable to find block, are you within 5 blocks of something?", sender);
             return null;
         }

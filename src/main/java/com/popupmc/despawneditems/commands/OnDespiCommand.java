@@ -93,6 +93,18 @@ public class OnDespiCommand implements CommandExecutor, TabCompleter {
     public final DespawnedItems plugin;
     public static final HashMap<String, AbstractDespiCommand> despiCommands = new HashMap<>();
 
+    public List<String> filterTabComplete(List<String> results, String typedSoFar) {
+
+        List<String> ret = new ArrayList<>();
+
+        for(String result : results) {
+            if(result.toLowerCase().startsWith(typedSoFar.toLowerCase()))
+                ret.add(result);
+        }
+
+        return ret;
+    }
+
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender,
                                                 @NotNull Command command,
@@ -105,32 +117,39 @@ public class OnDespiCommand implements CommandExecutor, TabCompleter {
 
         // Check for permission and block if no permission
         if(!sender.hasPermission("despi.use"))
-            return null;
+            return List.of("");
+
+        if(args.length == 0)
+            return List.of("");
 
         // Check for argument length, has to have at least 1 arg
         // Block with error if not
-        if(args.length == 0) {
+        if(args.length == 1) {
             ArrayList<String> list = new ArrayList<>();
+
+            list.add("help");
 
             for(Map.Entry<String, AbstractDespiCommand> commandEntry : despiCommands.entrySet()) {
                 if(commandEntry.getValue().showDescription(sender, args))
                     list.add(commandEntry.getKey());
             }
 
-            return list;
+            return filterTabComplete(list, args[0]);
         }
         else {
             AbstractDespiCommand despiCommand = despiCommands.getOrDefault(args[0].toLowerCase(), null);
             if(despiCommand != null) {
                 List<String> list = despiCommand.onTabComplete(sender, args);
-                if(list == null)
-                    return null;
+                if(list == null || list.size() == 0)
+                    return List.of("");
 
-                if(args.length == 1)
+                if(args.length == 2)
                     list.add(0, "help");
+
+                return filterTabComplete(list, args[args.length - 1]);
             }
         }
 
-        return null;
+        return List.of("");
     }
 }

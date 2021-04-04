@@ -13,7 +13,7 @@ public class OnItemDespawnEvent implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onEvent(final ItemDespawnEvent event) {
 
         // Get item stack
@@ -21,7 +21,7 @@ public class OnItemDespawnEvent implements Listener {
         ItemStack item = event.getEntity().getItemStack().clone();
 
         // Begin to process it async
-        new DespawnProcess(item.clone(), plugin);
+        new DespawnProcess(item, plugin);
     }
 
     public final DespawnedItems plugin;

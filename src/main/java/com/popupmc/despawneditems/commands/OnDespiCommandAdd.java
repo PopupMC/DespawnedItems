@@ -19,7 +19,7 @@ public class OnDespiCommandAdd extends AbstractDespiCommand {
         super(plugin, "add", "Adds a location to receive despawn items");
     }
 
-    // despi [add, <player>] - Add location as yourself or someone else
+    // despi [add, this, <player>] - Add location as yourself or someone else
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
         // Has to be a player for this one
@@ -28,7 +28,11 @@ public class OnDespiCommandAdd extends AbstractDespiCommand {
             return false;
 
         // Get optional player name
-        String playerName = getArg(1, args);
+        String thisStr = getArg(1, args);
+        String playerName = getArg(2, args);
+
+        if(thisStr == null || !thisStr.equalsIgnoreCase("this"))
+            return false;
 
         // If player name given check for elevated permission and get player
         // Otherwise proceed as self-ownership
@@ -40,12 +44,15 @@ public class OnDespiCommandAdd extends AbstractDespiCommand {
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
-        if(!canBeElevated(sender))
-            return null;
 
+        boolean isElevated = canBeElevated(sender);
         ArrayList<String> list = new ArrayList<>();
 
         if(args.length == 2) {
+            list.add("this");
+        }
+
+        if(args.length == 3 && isElevated) {
             for(Player player : Bukkit.getOnlinePlayers())
                 list.add(player.getName());
         }
@@ -56,10 +63,11 @@ public class OnDespiCommandAdd extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi add <player>");
+            sender.sendMessage(ChatColor.GRAY + "/despi add this (Marks location your pointing at to be a despawn block owned by you)");
+            sender.sendMessage(ChatColor.GRAY + "/despi add this <player> (Marks location your pointing at to be a despawn block owned by someone else)");
         }
         else {
-            sender.sendMessage(ChatColor.GRAY + "/despi add");
+            sender.sendMessage(ChatColor.GRAY + "/despi add this (Marks location your pointing at to be a despawn block owned by you)");
         }
     }
 

@@ -20,7 +20,6 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
 
     // despi [clear, <player>] - All locations owned by a player anywhere
     // despi [clear, here] - All players owned by this location
-    // despi [clear, all] - All players owned by this location
     // despi [clear, mine] - All of your locations
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
@@ -29,8 +28,6 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
 
         if(arg1 == null)
             return false;
-        else if(arg1.equalsIgnoreCase("all"))
-            return removeAllLocations(sender);
         else if(arg1.equalsIgnoreCase("mine"))
             return removeAllLocationsByOwner(sender, null);
         else if(!arg1.equalsIgnoreCase("here"))
@@ -46,9 +43,8 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
 
         ArrayList<String> list = new ArrayList<>();
 
-        if(args.length == 1) {
+        if(args.length == 2) {
             list.add("here");
-            list.add("all");
             for(Player player : Bukkit.getOnlinePlayers())
                 list.add(player.getName());
         }
@@ -59,23 +55,17 @@ public class OnDespiCommandClear extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi clear [mine||here|total|<player>]");
+            sender.sendMessage(ChatColor.GRAY + "/despi clear mine (Unmarks all of your despawn blocks)");
+            sender.sendMessage(ChatColor.GRAY + "/despi clear here (Unmarks all despawn block owners of this location)");
+            sender.sendMessage(ChatColor.GRAY + "/despi clear <player> (Unmarks all despawn blocks of player)");
         }
         else {
-            sender.sendMessage(ChatColor.GRAY + "/despi clear mine");
+            sender.sendMessage(ChatColor.GRAY + "/despi clear mine (Unmarks all of your despawn blocks)");
         }
     }
 
     @Override
     public boolean showDescription(@NotNull CommandSender sender, @NotNull String[] args) {
-        return true;
-    }
-
-    public boolean removeAllLocations(@NotNull CommandSender sender) {
-        if(!canBeElevated("You don't have permission to clear all locations", sender))
-            return false;
-
-        success("Locations Removed: " + plugin.config.fileLocations.removeAll(), sender);
         return true;
     }
 

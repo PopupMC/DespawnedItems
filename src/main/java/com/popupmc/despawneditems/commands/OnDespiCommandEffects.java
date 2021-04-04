@@ -18,10 +18,9 @@ public class OnDespiCommandEffects extends AbstractDespiCommand {
         super(plugin, "effects", "Manages effects, often for testing");
     }
 
-    // despi [effects, count]
-    // despi [effects, create]
-    // despi [effects, clear]
-    // despi [effects]
+    // despi [effects, count-ongoing]
+    // despi [effects, create-here]
+    // despi [effects, clear-ongoing]
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
         if(!canBeElevated(sender))
@@ -30,13 +29,16 @@ public class OnDespiCommandEffects extends AbstractDespiCommand {
         String option = getArg(1, args);
 
         if(option == null)
-            return sendCount(sender);
-        else if(option.equalsIgnoreCase("create"))
-            return create(sender);
-        else if(option.equalsIgnoreCase("clear"))
-            return clear(sender);
+            return false;
 
-        return sendCount(sender);
+        if(option.equalsIgnoreCase("create-here"))
+            return create(sender);
+        else if(option.equalsIgnoreCase("clear-ongoing"))
+            return clear(sender);
+        else if(option.equalsIgnoreCase("count-ongoing"))
+            return sendCount(sender);
+
+        return false;
     }
 
     @Override
@@ -47,9 +49,9 @@ public class OnDespiCommandEffects extends AbstractDespiCommand {
         ArrayList<String> list = new ArrayList<>();
 
         if(args.length == 2) {
-            list.add("count");
-            list.add("create");
-            list.add("clear");
+            list.add("count-ongoing");
+            list.add("create-here");
+            list.add("clear-ongoing");
         }
 
         return list;
@@ -58,7 +60,9 @@ public class OnDespiCommandEffects extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi effects count|create|clear");
+            sender.sendMessage(ChatColor.GRAY + "/despi effects count-ongoing (Count ongoing effects)");
+            sender.sendMessage(ChatColor.GRAY + "/despi effects create-here (Make effects here)");
+            sender.sendMessage(ChatColor.GRAY + "/despi effects clear-ongoing (Remove ongoing effects)");
         }
         else {
             sender.sendMessage(ChatColor.GRAY + "You don't have access to this command");
