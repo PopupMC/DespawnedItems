@@ -23,7 +23,20 @@ public class DespawnIntoVoid extends AbstractDespawnInto {
                 targetMaterial == Material.DEBUG_STICK ||
                 targetMaterial == Material.JIGSAW ||
                 targetMaterial == Material.STRUCTURE_BLOCK ||
-                targetMaterial == Material.STRUCTURE_VOID;
+                targetMaterial == Material.STRUCTURE_VOID ||
+                targetMaterial == Material.NETHERITE_AXE ||
+                targetMaterial == Material.NETHERITE_BLOCK ||
+                targetMaterial == Material.NETHERITE_BOOTS ||
+                targetMaterial == Material.NETHERITE_CHESTPLATE ||
+                targetMaterial == Material.NETHERITE_HELMET ||
+                targetMaterial == Material.NETHERITE_HOE ||
+                targetMaterial == Material.NETHERITE_INGOT ||
+                targetMaterial == Material.NETHERITE_LEGGINGS ||
+                targetMaterial == Material.NETHERITE_PICKAXE ||
+                targetMaterial == Material.NETHERITE_SCRAP ||
+                targetMaterial == Material.NETHERITE_SHOVEL ||
+                targetMaterial == Material.NETHERITE_SWORD ||
+                targetMaterial == Material.ANCIENT_DEBRIS;
     }
 
     @Override

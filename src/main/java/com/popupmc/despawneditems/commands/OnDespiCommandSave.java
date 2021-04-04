@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class OnDespiCommandSave extends AbstractDespiCommand {
@@ -18,21 +19,36 @@ public class OnDespiCommandSave extends AbstractDespiCommand {
         if(!canBeElevated(sender))
             return false;
 
+        if(args.length != 2)
+            return false;
+
+        if(!args[1].equalsIgnoreCase("do"))
+            return false;
+
         plugin.config.fileLocations.save();
-        success("Locations have been saved", sender);
+        success("Config has been saved", sender);
 
         return true;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
-        return null;
+        if(!canBeElevated(sender))
+            return null;
+
+        ArrayList<String> list = new ArrayList<>();
+
+        if(args.length == 2) {
+            list.add("do");
+        }
+
+        return list;
     }
 
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi save");
+            sender.sendMessage(ChatColor.GRAY + "/despi save do");
         }
         else {
             sender.sendMessage(ChatColor.GRAY + "You don't have access to this command");

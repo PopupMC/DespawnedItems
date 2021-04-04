@@ -18,46 +18,91 @@ public class OnDespiCommandRemove extends AbstractDespiCommand {
         super(plugin, "remove", "Removes location your pointing at from despawn");
     }
 
-    // despi [remove, player, <player>] - Removes the first location owned by the player
-    // despi [remove, <player|any>] - Removes a location owned by a player, or the first of anybody
-    // despi [remove] - Removes your location
+    // despi [remove, [here|anywhere], owned-by, <player>] - Remove this players location or location in general
+    // despi [remove, [here], owned-by-anyone>] - Remove this location
+    // despi [remove, [here|anywhere], owned-by-me] - Remove own location or location in general
     @Override
     public boolean runCommand(@NotNull CommandSender sender, @NotNull String[] args) {
 
-        // Get args to name
-        String anyLocationByName = getArg(2, args);
-        String locationByName = getArg(1, args);
+        // Get arguments
+        String hereOrAnywhere = getArg(1, args);
+        String ownedBy = getArg(2, args);
+        String playerName = getArg(3, args);
 
-        // If 3rd arg, do any location by name
-        if(anyLocationByName != null)
-            return removeAnyLocationByName(sender, anyLocationByName);
+        // Get here or anywhere
+        if(hereOrAnywhere == null ||
+                (!hereOrAnywhere.equalsIgnoreCase("here") &&
+                        !hereOrAnywhere.equalsIgnoreCase("anywhere")))
+            return false;
+
+        // Is this
+        // /despi exists anywhere owned-by <player>
+        if(hereOrAnywhere.equalsIgnoreCase("anywhere") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by") &&
+                playerName != null)
+            return removeAnyLocationByName(sender, playerName);
 
         // Here after we need the sender to be a player
-        Player player = isPlayer(sender, "Only players can remove locations");
+        Player player = isPlayer(sender, "Only players can check locations");
         if(player == null)
             return false;
 
-        // If 2nd arg, remove by name, otherwise, remove as self
-        if(locationByName != null)
-            return removeLocationByName((Player)sender, locationByName);
+        // Is this
+        // /despi exists anywhere owned-by-me
+        if(hereOrAnywhere.equalsIgnoreCase("anywhere") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by-me") &&
+                playerName == null)
+            return removeAnyLocationByName(player, player);
 
-        return removeLocation((Player)sender, null);
+        // Is this
+        // /despi exists here owned-by <player>
+        if(hereOrAnywhere.equalsIgnoreCase("here") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by") &&
+                playerName != null)
+            return removeThisLocation(player, playerName);
+
+        // Is this
+        // /despi exists here owned-by-anyone
+        if(hereOrAnywhere.equalsIgnoreCase("here") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by-anyone") &&
+                playerName == null)
+            return removeThisLocation(player, null, true);
+
+        // Is this
+        // /despi exists here owned-by-me
+        if(hereOrAnywhere.equalsIgnoreCase("here") &&
+                ownedBy != null &&
+                ownedBy.equalsIgnoreCase("owned-by-me") &&
+                playerName == null)
+            return removeThisLocation(player, null, false);
+
+        return false;
     }
 
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull String[] args) {
-        if(!canBeElevated(sender))
-            return null;
-
+        boolean canElevate = canBeElevated(sender);
         ArrayList<String> list = new ArrayList<>();
 
         if(args.length == 2) {
-            list.add("player");
-            for(Player player : Bukkit.getOnlinePlayers())
-                list.add(player.getName());
+            list.add("here");
+            list.add("anywhere");
         }
+        else if(args.length == 3) {
 
-        if(args.length == 3 && args[1].equals("player")) {
+            if(canElevate)
+                list.add("owned-by");
+
+            if(!args[1].equalsIgnoreCase("anywhere") && canElevate)
+                list.add("owned-by-anyone");
+
+            list.add("owned-by-me");
+        }
+        else if(args.length == 4 && args[2].equalsIgnoreCase("owned-by") && canElevate) {
             for(Player player : Bukkit.getOnlinePlayers())
                 list.add(player.getName());
         }
@@ -68,10 +113,12 @@ public class OnDespiCommandRemove extends AbstractDespiCommand {
     @Override
     public void displayHelp(@NotNull CommandSender sender, @NotNull String[] args) {
         if(canBeElevated(sender)) {
-            sender.sendMessage(ChatColor.GRAY + "/despi remove [[player <player>]|<player>|any]");
+            sender.sendMessage(ChatColor.GRAY + "/despi remove [here|anywhere] owned-by <player> (Remove this player owned location here or first location in general)");
+            sender.sendMessage(ChatColor.GRAY + "/despi remove [here] owned-by-anyone (Remove any player owned location here)");
+            sender.sendMessage(ChatColor.GRAY + "/despi remove [here|anywhere] owned-by-me (Remove your location here or location in general)");
         }
         else {
-            sender.sendMessage(ChatColor.GRAY + "/despi remove");
+            sender.sendMessage(ChatColor.GRAY + "/despi remove [here|anywhere] owned-by-me (Remove your location here or first location in general)");
         }
     }
 
@@ -86,33 +133,35 @@ public class OnDespiCommandRemove extends AbstractDespiCommand {
 
         OfflinePlayer player = getPlayer(ownerName);
 
-        boolean success = plugin.config.fileLocations.remove(player.getUniqueId());
+        return removeAnyLocationByName(sender, player);
+    }
 
-        if(success)
-            success("A location was deleted owned by " + ownerName, sender);
+    public boolean removeAnyLocationByName(@NotNull CommandSender sender, @NotNull OfflinePlayer ownerName) {
+        boolean success = plugin.config.fileLocations.remove(ownerName.getUniqueId());
+
+        if(success) {
+            success("A location was removed!", sender);
+        }
         else
-            warning(ownerName + " doesn't own any locations!", sender);
+            warning("No location was removed (Did the player have locations?)", sender);
 
         return true;
     }
 
-    public boolean removeLocationByName(@NotNull Player sender, @NotNull String ownerName) {
+    public boolean removeThisLocation(@NotNull Player sender, @NotNull String ownerName) {
         if(!canBeElevated("You don't have permission to remove someone elses location", sender))
             return false;
 
-        if(ownerName.equalsIgnoreCase("any"))
-            return removeLocation(sender, null, true);
-
         OfflinePlayer player = getPlayer(ownerName);
 
-        return removeLocation(sender, player);
+        return removeThisLocation(sender, player);
     }
 
-    public boolean removeLocation(@NotNull Player sender, @Nullable OfflinePlayer owner) {
-        return removeLocation(sender, owner, false);
+    public boolean removeThisLocation(@NotNull Player sender, @Nullable OfflinePlayer owner) {
+        return removeThisLocation(sender, owner, false);
     }
 
-    public boolean removeLocation(@NotNull Player sender, @Nullable OfflinePlayer owner, boolean skipOwner) {
+    public boolean removeThisLocation(@NotNull Player sender, @Nullable OfflinePlayer owner, boolean anyOwner) {
         if(owner == null)
             owner = sender;
 
@@ -122,15 +171,15 @@ public class OnDespiCommandRemove extends AbstractDespiCommand {
 
         boolean success;
 
-        if(skipOwner)
+        if(anyOwner)
             success = plugin.config.fileLocations.remove(location);
         else
             success = plugin.config.fileLocations.remove(location, owner.getUniqueId());
 
         if(success)
-            success("Location successfully removed", sender);
+            success("Location removed", sender);
         else
-            warning("Location did not exist to remove", sender);
+            warning("Location wasn't removed (Did it ever exist?)", sender);
 
         return true;
     }
